@@ -6,6 +6,7 @@ Runesgalder is pre-alpha. The runtime is changing quickly, and the public contra
 
 - Open an issue or discussion before substantial work so we can agree the scope and design.
 - All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership and grant the Project Owner the licence described in the CLA.
+- Until CLA Assistant is configured, include this statement in the pull request body: "I have read and accept the Runesgalder Contributor Licence Agreement v1.0."
 - Bug reports, design feedback, and reproducible test cases in issues do not require a CLA unless they are submitted for inclusion in the repository.
 - Security reports must follow [SECURITY.md](SECURITY.md). Do not report vulnerabilities in a public issue.
 

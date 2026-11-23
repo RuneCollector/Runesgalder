@@ -29,6 +29,7 @@ Describe the change and why it is needed.
 ## Checklist
 
 - [ ] I have read `CONTRIBUTING.md`.
+- [ ] I have read and accept [CLA.md](CLA.md) v1.0, or I am covered by a signed Corporate CLA.
 - [ ] I have not included secrets, tokens, private keys, or personal data.
 - [ ] I have added or updated tests where behaviour changed.
 - [ ] I have updated documentation where needed.
