@@ -24,7 +24,8 @@ internal sealed class CsvTable : ITable
         var records = ReadRecords(text);
         if (records.Count == 0)
         {
-            throw new CsvFormatException("The CSV file is empty.");
+            // An empty file is the empty table used when the host supplies no data.
+            return new CsvTable(name, [], EmptyRows);
         }
 
         var columns = records[0];

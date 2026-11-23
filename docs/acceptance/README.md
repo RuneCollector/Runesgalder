@@ -42,3 +42,5 @@ Use `TEMPLATE.md` for each record. Name records `YYYY-MM-DD-short-name.md`. Link
 
 - [2026-11-23 — Core skeleton](2026-11-23-core-skeleton.md)
 - [2026-11-23 — CLA v1.0](2026-11-23-cla-v1.md)
+- [2026-11-23 — Phase 1 and G2](2026-11-23-phase-1-g2.md)
+- [2026-11-23 — MCP surface](2026-11-23-adr-0008-mcp.md)

@@ -1,7 +1,8 @@
 # ADR-0008: MCP surface for the sandbox
 
-- Status: Proposed (awaiting acceptance)
+- Status: Accepted
 - Date: 2026-11-23
+- Accepted: 2026-11-23
 - Deciders: karlmoriaty
 
 ## Context
@@ -32,7 +33,7 @@ The MCP server is a client of the sandbox, not a second sandbox. It must not acc
 `compile_csharp`
 
 - Request: `code` (string, ≤ 256 KiB UTF-8), `contract` (optional, only `analysis` in v0.1).
-- Response: `ok`, `diagnostics[]` (`id`, `severity`, `message`, `line`, `column`), `artifact` (`sha256`, `bytes`) or null, `durationMs`.
+- Response: `ok`, `diagnostics[]` (`id`, `severity`, `message`, `line`, `column`), `artifact` (`sha256`, `bytes`) or null, `duration_ms`, and `error` (`code`, `message`) or null for request-level failures.
 - Compiles on the host with the existing compiler; never executes code.
 
 `run_csharp`
@@ -49,7 +50,7 @@ The MCP server is a client of the sandbox, not a second sandbox. It must not acc
 `cancel_run`
 
 - Request: `run_id`.
-- Response: `run_id` and `status`. Idempotent: cancelling a terminal run returns its terminal status unchanged.
+- Response: `run_id`, `status`, and `error` (`code`, `message`) or null. Idempotent: cancelling a terminal run returns its terminal status unchanged.
 
 ### Runs and retention
 

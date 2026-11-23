@@ -18,7 +18,7 @@ Both surfaces are designed around the same primitives: `Step`, `Effect`, `Policy
 | Typed Flow steps, journal events, retry, cancellation | Working skeleton |
 | Sandbox policy contracts and default-deny policy | Working skeleton |
 | Roslyn compile pipeline, worker isolation, Linux `sandboxd` | Planned; not started |
-| MCP server (`compile_csharp`, `run_csharp`, `get_run`, `cancel_run`) | Planned for v0.1 |
+| MCP server over stdio (`compile_csharp`, `run_csharp`, `get_run`, `cancel_run`) | Working skeleton; analysis contract only |
 | English documentation | Available |
 | Chinese and German Quickstarts | Planned |
 | GitHub Actions CI (build, test, format) | Present |
@@ -80,6 +80,35 @@ The default policy denies network access, uses bounded memory, CPU, process, out
 
 The sandbox engine is still under construction. Treat the current repository as a design and skeleton, not as a secure execution boundary.
 
+## MCP server
+
+`src/Runesgalder.Mcp` exposes the sandbox to any MCP client over stdio. It is not published as a package yet; build it from source:
+
+```bash
+dotnet publish src/Runesgalder.Sandbox.Worker/Runesgalder.Sandbox.Worker.csproj -c Release -o artifacts/worker
+docker build -f src/Runesgalder.Sandbox.Worker/Dockerfile -t runesgalder-worker:dev artifacts/worker
+dotnet publish src/Runesgalder.Mcp/Runesgalder.Mcp.csproj -c Release -o artifacts/mcp
+```
+
+Client configuration (Claude Code, Cursor, or another stdio client):
+
+```json
+{
+  "mcpServers": {
+    "runesgalder": {
+      "command": "/absolute/path/to/artifacts/mcp/runesgalder-mcp.exe"
+    }
+  }
+}
+```
+
+On Linux use `runesgalder-mcp` without the `.exe` suffix. Environment variables:
+
+- `RUNESGALDER_MCP_WORKER_IMAGE` — worker image name, default `runesgalder-worker:dev`.
+- `RUNESGALDER_MCP_MAX_WALL_CLOCK_SECONDS` — operator wall-clock ceiling, default and maximum 120.
+
+The four tools are `compile_csharp`, `run_csharp`, `get_run`, and `cancel_run`. v0.1 executes the analysis contract only: generated code implements `Runesgalder.Sandbox.IAnalysis`, input data is inline CSV, and no file paths, URLs, environment values, or Docker options are accepted. Runs execute in the hardened container; one runs at a time and four may queue. stdout carries MCP frames only; logs go to stderr. The server needs Docker on the host and no network listener. See [ADR-0008](docs/adr/0008-mcp-surface.md) for the full contract.
+
 ## Security warning
 
 Do not run untrusted code with this repository yet. The sandbox implementation, Linux daemon, container hardening, and escape test corpus are not complete. The v0.1 isolation model is local, single-tenant, and container-based; it is not a claim of multi-tenant hardening.
@@ -105,10 +134,15 @@ src/
   Runesgalder.Abstractions/        Shared runtime primitives
   Runesgalder.Flow/                Typed flow orchestration
   Runesgalder.Sandbox.Abstractions/ Host contracts and sandbox policy
+  Runesgalder.Sandbox.Compilation/ Roslyn compile pipeline
+  Runesgalder.Sandbox.Worker/      Sandbox worker and container image
+  Runesgalder.Sandbox.Containers/  Container runner with hard deadline
+  Runesgalder.Mcp/                 MCP server over stdio
   Runesgalder.Cli/                 Development CLI
 tests/
   Runesgalder.Flow.Tests/
   Runesgalder.Sandbox.Tests/
+  Runesgalder.Mcp.Tests/
 docs/
   PROJECT_PLAN.md
   adr/
