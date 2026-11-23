@@ -1346,7 +1346,11 @@ CSV 中放一行：
 - Flow 3 个组合子、Journal。（已完成：Day 6-7）
 - 数据 API。（已完成：`TableSlice` 提供过滤、分组、聚合、排序、截取；13 项新测试；ADR-0010）
 - Demo happy path。（已完成：Day 8-9）
-- G2：Demo 可跑。（待本周大 demo 验收；公共 API 变更需你验收后合入 `main`）
+- G2：Demo 可跑。（已完成：2026-11-23 大 demo 验收通过；记录见 `docs/acceptance/2026-11-23-phase-1-g2.md`）
+
+### Phase 2：治理与恢复
+
+- 7 个组合子、预算、审批、恢复、策略拒绝、MCP、OTel、逃逸测试 v0。（进行中：先起草 ADR-0008「MCP surface」供验收，再按 9.4 节奏推进）
 
 ---
 

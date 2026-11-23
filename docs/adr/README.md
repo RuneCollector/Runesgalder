@@ -11,7 +11,7 @@ This directory records the decisions that shape Runesgalder. Each record states 
 | [0005](0005-native-aot-role.md) | Native AOT roles in the sandbox | Accepted |
 | [0006](0006-roslyn-compilation.md) | Typed code step contract and compile pipeline | Accepted |
 | [0007](0007-journal-and-recovery.md) | Journal, idempotency, and recovery semantics | Accepted |
-| 0008 | MCP surface | Planned |
+| [0008](0008-mcp-surface.md) | MCP surface | Proposed |
 | [0009](0009-licence-and-contribution-terms.md) | Licence, contribution terms, and naming | Accepted |
 | [0010](0010-data-analysis-contract.md) | Data-analysis script contract and table API | Accepted |
 
