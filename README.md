@@ -107,7 +107,7 @@ On Linux use `runesgalder-mcp` without the `.exe` suffix. Environment variables:
 - `RUNESGALDER_MCP_WORKER_IMAGE` — worker image name, default `runesgalder-worker:dev`.
 - `RUNESGALDER_MCP_MAX_WALL_CLOCK_SECONDS` — operator wall-clock ceiling, default and maximum 120.
 
-The four tools are `compile_csharp`, `run_csharp`, `get_run`, and `cancel_run`. v0.1 executes the analysis contract only: generated code implements `Runesgalder.Sandbox.IAnalysis`, input data is inline CSV, and no file paths, URLs, environment values, or Docker options are accepted. Runs execute in the hardened container; one runs at a time and four may queue. stdout carries MCP frames only; logs go to stderr. The server needs Docker on the host and no network listener. See [ADR-0008](docs/adr/0008-mcp-surface.md) for the full contract.
+The four tools are `compile_csharp`, `run_csharp`, `get_run`, and `cancel_run`. v0.1 executes the analysis contract only: generated code implements `Runesgalder.Sandbox.IAnalysis`, input data is inline CSV, and no file paths, URLs, environment values, or Docker options are accepted. Runs execute in the hardened container; one runs at a time and four may queue. `cancel_run` is cooperative: it returns the current envelope, which may still be `running`, and the run reaches `cancelled` once cancellation or the container deadline takes effect, so poll `get_run`. stdout carries MCP frames only; logs go to stderr. The server needs Docker on the host and no network listener. See [ADR-0008](docs/adr/0008-mcp-surface.md) for the full contract.
 
 ## Security warning
 
