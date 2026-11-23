@@ -6,7 +6,7 @@ Runesgalder is pre-alpha. The runtime is changing quickly, and the public contra
 
 - Open an issue or discussion before substantial work so we can agree the scope and design.
 - All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership and grant the Project Owner the licence described in the CLA.
-- Until CLA Assistant is configured, include this statement in the pull request body: "I have read and accept the Runesgalder Contributor Licence Agreement v1.0."
+- CLA Assistant records acceptance on your first pull request. Sign in with your GitHub account when the CLA check asks you to; the check turns green once acceptance is recorded.
 - Bug reports, design feedback, and reproducible test cases in issues do not require a CLA unless they are submitted for inclusion in the repository.
 - Security reports must follow [SECURITY.md](SECURITY.md). Do not report vulnerabilities in a public issue.
 
@@ -62,7 +62,7 @@ A pull request should include:
 - Any security or compatibility impact.
 - Documentation changes, if behaviour is user-visible.
 - Confirmation that `dotnet format --verify-no-changes` passes.
-- Confirmation that you have accepted the CLA. CLA Assistant will record this automatically once the integration is configured.
+- Confirmation that you have accepted the CLA. CLA Assistant records acceptance and reports it as a pull request status check.
 
 Large changes that affect public APIs, security boundaries, release packaging, governance, or the product direction require explicit maintainer acceptance before merge. Small changes can be accepted by the maintainer after CI and local evidence.
 

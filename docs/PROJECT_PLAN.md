@@ -53,7 +53,7 @@
 | AI 使用 karlmoriaty 身份提交 | Git `user.name = karlmoriaty`；`user.email = 3070687583@qq.com`（沿用现有配置） | 公开仓库会暴露提交邮箱；可用 `199178627+karlmoriaty@users.noreply.github.com` 替代 |
 | 大更新验收 / 小更新自主验收 | 小更新：CI + 自测 + 证据 + 自主合并；大更新：你验收后合并 | 大更新清单见 9.1；验收记录写入 PR 或 `docs/acceptance/` |
 | 每天小 demo / 每周大 demo | 小 demo 每天至少 1 个；大 demo 每周至少 1 个 | 证据写入 `docs/demos/`；大 demo 与每周 Gate 结合 |
-| 贡献者协议 CLA | 个人 + 公司 CLA；首次 PR 签署；你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛 | 采用成熟模板，最终文本由你/律师审定；GitHub App 权限与凭据不写入仓库；不再使用 DCO |
+| 贡献者协议 CLA | 个人 + 公司 CLA；首次 PR 签署；你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛 | 采用成熟模板，最终文本由你/律师审定；GitHub App 权限与凭据不写入仓库；不再使用 DCO |
 | 文档语言 | 英式英语（en-GB）主文档；中文 Quickstart；德语（de-DE）Quickstart | “柏林官方德语”按德国标准德语处理，不使用柏林方言；需要母语校对 |
 | v0.1 包含 MCP server | MCP 是 P0；stdio 优先；`compile_csharp` / `run_csharp` / `get_run` / `cancel_run` | HTTP/SSE 后置 |
 | v0.1 发布 NuGet / GHCR 预览包 | `0.1.0-preview.*`；NuGet + GHCR（linux/amd64） | 公开包发布在 v0.1-preview；此前只推源码 |
@@ -884,7 +884,7 @@ CI 安全：
 - 容器基础镜像固定 digest；最小镜像。
 - NuGet 包使用可用签名；容器/工件用 Sigstore cosign keyless + GitHub attestations；NuGet 签名不可行时明示。
 - 不在构建日志中输出 token。
-- 贡献者 CLA（你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛）；提交签名可选。
+- 贡献者 CLA（你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛）；提交签名可选。
 
 ### 10.6 版本与兼容
 
@@ -901,7 +901,7 @@ CI 安全：
 - 认证：HTTPS remote；使用现有 credential store；不把 token 写入 remote URL、文件、日志、CI 输出或制品。SSH 当前不可用，不依赖。
 - 分支：小更新走短分支 + PR + CI，然后自主合并；单人仓库也可直接推送 main，但必须保留测试证据。大更新必须你验收后合并。
 - 公开仓库：首次推送前和 CI 中做秘密扫描；不提交 `.env`、API key、个人数据（已批准的联系信息除外）。
-- 你已批准在本项目范围内安装、配置并操作 CLA Assistant / GitHub App；我负责配置和清单，权限与凭据不写入仓库。CLA 最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛。GitHub Actions 权限、NuGet/GHCR 发布凭据仍需你授权。
+- 你已批准在本项目范围内安装、配置并操作 CLA Assistant / GitHub App；我负责配置和清单，权限与凭据不写入仓库。CLA 最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛。GitHub Actions 权限、NuGet/GHCR 发布凭据仍需你授权。
 - 发布/公告仍按外部动作审批；推送代码不等于批准发布。
 
 ---
@@ -1055,7 +1055,7 @@ CSV 中放一行：
 ### 13.5 社区与治理
 
 - `CONTRIBUTING.md`、`CODE_OF_CONDUCT.md`、`SECURITY.md`、issue/PR 模板。
-- CLA（已选，个人 + 公司）；你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛；首次 PR 签署；AI 辅助贡献需披露 + 人类负责。
+- CLA（已选，个人 + 公司）；你已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛；首次 PR 签署；AI 辅助贡献需披露 + 人类负责。
 - GitHub Discussions 起步；v0.1 发布后开 Discord。
 - 每月 roadmap；RFC / ADR 流程；good-first-issues。
 - 维护者梯队：v0.5 后招募 1-2 名外部 maintainer；避免 bus factor = 1。
@@ -1183,7 +1183,7 @@ CSV 中放一行：
 | MIT 版权人 | LICENSE 必须有版权行 | `Copyright (c) 2026 karlmoriaty`；LICENSE 附 https://github.com/karlmoriaty 与两个邮箱；AUTHORS 同步；SECURITY 只放安全邮箱 |
 | MIT 无显式专利授权 | 专利风险需自知 | 在贡献指南/FAQ 说明；必要时另写专利政策 |
 | MIT 不含商标授权 | 品牌与代码许可分离 | 名称已定 Runesgalder；商标注册与商标政策后置 |
-| CLA 已选 | 影响贡献者门槛与未来商业化 | 个人 + 公司 CLA；成熟模板；已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛；首次 PR 签署 |
+| CLA 已选 | 影响贡献者门槛与未来商业化 | 个人 + 公司 CLA；成熟模板；已批准安装/配置并操作 CLA Assistant 与 GitHub App；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛；首次 PR 签署 |
 | 第三方 notices | 依赖许可证合规 | 自动生成 NOTICE / SBOM；发布前审计 |
 | 名称/商标/域名 | 公开前必须可用 | 名称可用性 Gate；初查未见 NuGet/GitHub 占用；初查与复核结果反馈给你；不擅自注册商标/域名 |
 | 公开邮箱隐私 | public 仓库会暴露两个邮箱 | 两个邮箱按你要求公开在 LICENSE / AUTHORS；SECURITY 只列 3070687583@qq.com；GitHub Advisories 为主；可改 noreply/专用安全邮箱 |
@@ -1256,7 +1256,7 @@ CSV 中放一行：
 | 8 | 个人账号 public 仓库 `karlmoriaty/Runesgalder`；所有提交推送到此仓库 | 已确认 |
 | 9 | Git 提交身份使用 karlmoriaty；沿用 `3070687583@qq.com` | 已确认 |
 | 10 | 安全联系 `3070687583@qq.com`；GitHub Security Advisories 为主渠道 | 已确认 |
-| 11 | 贡献者协议 CLA（个人 + 公司；首次 PR 签署；已批准安装/操作 CLA Assistant 与 GitHub App；文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛） | 已确认 |
+| 11 | 贡献者协议 CLA（个人 + 公司；首次 PR 签署；已批准安装/操作 CLA Assistant 与 GitHub App；文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛） | 已确认 |
 | 12 | 文档：英式英语（en-GB）为主；中文 Quickstart；德语（de-DE）Quickstart | 已确认 |
 | 13 | v0.1 包含 MCP server；发布 NuGet / GHCR 预览包 | 已确认 |
 | 14 | 遥测默认完全关闭；仅本地日志/OTel；不 phone-home | 已确认 |
@@ -1283,7 +1283,7 @@ CSV 中放一行：
 | 2 | 提交邮箱 | `3070687583@qq.com`（沿用现有配置） |
 | 3 | 邮箱公开 | 两个邮箱写入 LICENSE / AUTHORS；SECURITY 只写 3070687583@qq.com；GitHub Advisories 为主渠道，不需要额外邮箱 |
 | 4 | “柏林官方德语” | 德国标准德语 de-DE；不使用柏林方言 |
-| 5 | CLA 模板与工具 | 已批准安装/配置并操作 CLA Assistant 与 GitHub App；采用 Apache ICLA / Harmony 类成熟模板；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛 |
+| 5 | CLA 模板与工具 | 已批准安装/配置并操作 CLA Assistant 与 GitHub App；采用 Apache ICLA / Harmony 类成熟模板；最终文本已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛 |
 | 6 | OSS 签名服务 | SignPath.io OSS + Sigstore cosign keyless + GitHub attestations；未获批则 checksums + attestations |
 | 7 | 商标/域名 | 只做初查；不注册商标、不买域名、不抢注社交账号；初查与公开前复核结果整理成报告反馈给你 |
 
@@ -1291,7 +1291,7 @@ CSV 中放一行：
 
 2026-11-23，你回复“行，那你开工吧”。计划进入执行；16.3 的 7 项按已确认方式执行。
 
-16.3 的 7 项已全部确认，不再逐项回复。当前执行边界：代码、仓库、提交/推送、CI、CLA Assistant 安装与配置已获授权；发版、NuGet/GHCR 发布、公开宣传、域名/商标/社交账号注册仍需你逐次批准。CLA v1.0 已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛。
+16.3 的 7 项已全部确认，不再逐项回复。当前执行边界：代码、仓库、提交/推送、CI、CLA Assistant 安装与配置已完成；发版、NuGet/GHCR 发布、公开宣传、域名/商标/社交账号注册仍需你逐次批准。CLA v1.0 已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛。
 
 ---
 
@@ -1481,5 +1481,5 @@ CSV 中放一行：
 
 - 已授权：写实现代码、维护 public 仓库、提交并推送到 `karlmoriaty/Runesgalder`、配置 CI、安装/配置 CLA Assistant 与 GitHub App。
 - 仍需逐次批准：发版、NuGet/GHCR 发布、公开宣传与 launch、域名/商标/社交账号注册或购买。
-- CLA v1.0 已经你于 2026-11-23 审查并生效；CLA Assistant 配置后设为合并门槛。
+- CLA v1.0 已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛。
 - 我会按 Gate 交付，不会在没有证据的情况下说“完成了”。
