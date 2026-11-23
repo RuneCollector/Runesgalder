@@ -7,6 +7,7 @@ Runesgalder is pre-alpha. The runtime is changing quickly, and the public contra
 - Open an issue or discussion before substantial work so we can agree the scope and design.
 - All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership and grant the Project Owner the licence described in the CLA.
 - CLA Assistant records acceptance on your first pull request. Sign in with your GitHub account when the CLA check asks you to; the check turns green once acceptance is recorded.
+- Contributions made on behalf of a corporation require a signed [Corporate CLA](CORPORATE_CLA.md), sent by email as described in [docs/CORPORATE_CLA_PROCESS.md](docs/CORPORATE_CLA_PROCESS.md). Designated contributors still sign the individual CLA through CLA Assistant.
 - Bug reports, design feedback, and reproducible test cases in issues do not require a CLA unless they are submitted for inclusion in the repository.
 - Security reports must follow [SECURITY.md](SECURITY.md). Do not report vulnerabilities in a public issue.
 
@@ -72,7 +73,7 @@ The project records acceptance decisions in [docs/acceptance/](docs/acceptance/)
 
 ## Licence
 
-By contributing, you agree that your contributions are licensed under the MIT Licence and the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership of your contributions. All pull requests require acceptance of the CLA; corporate contributors must provide a signed Corporate CLA.
+By contributing, you agree that your contributions are licensed under the MIT Licence and the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership of your contributions. All pull requests require acceptance of the CLA; corporate contributors must provide a signed [Corporate CLA](CORPORATE_CLA.md) by email before entity-owned contributions are merged.
 
 ## Code of conduct
 
