@@ -1340,6 +1340,14 @@ CSV 中放一行：
 - 你决定：继续 / 调整范围 / 停止。
 - 通过后进入 Phase 1；仓库已 public，但不发包、不做 launch。
 
+### Phase 1：垂直切片
+
+- 沙箱编译/执行 v0。（已完成：Day 3-5）
+- Flow 3 个组合子、Journal。（已完成：Day 6-7）
+- 数据 API。（已完成：`TableSlice` 提供过滤、分组、聚合、排序、截取；13 项新测试；ADR-0010）
+- Demo happy path。（已完成：Day 8-9）
+- G2：Demo 可跑。（待本周大 demo 验收；公共 API 变更需你验收后合入 `main`）
+
 ---
 
 ## 18. 附录

@@ -84,25 +84,23 @@ internal static class DemoScripts
         {
             public Task<AnalysisResult> RunAsync(ITable table, IScriptContext context)
             {
-                var monthIndex = Array.IndexOf(table.Columns.ToArray(), "month");
-                var revenueIndex = Array.IndexOf(table.Columns.ToArray(), "revenue");
-
-                var totals = table.Rows
-                    .GroupBy(row => row[monthIndex] ?? "(unknown)")
+                var sales = table.ToSlice();
+                var totals = sales
+                    .GroupBy("month")
                     .OrderBy(group => group.Key, StringComparer.Ordinal)
                     .Select(group => new
                     {
                         Month = group.Key,
-                        Total = group.Sum(row => double.Parse(row[revenueIndex] ?? "0", CultureInfo.InvariantCulture))
+                        Total = group.Table.Sum("revenue")
                     })
                     .ToArray();
 
-                context.Log($"summed {table.Rows.Count} rows into {totals.Length} months");
+                context.Log($"summed {sales.Count} rows into {totals.Length} months");
                 context.Chart(new ChartSpec(
                     ChartKind.Line,
                     "Revenue by month",
                     totals.Select(entry => entry.Month).ToArray(),
-                    totals.Select(entry => entry.Total).ToArray()));
+                    totals.Select(entry => (double)entry.Total).ToArray()));
 
                 var best = totals.OrderByDescending(entry => entry.Total).FirstOrDefault();
                 var summary = best is null
