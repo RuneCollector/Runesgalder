@@ -22,5 +22,6 @@
     <ProjectReference Include="../../src/Runesgalder.Sandbox.Abstractions/Runesgalder.Sandbox.Abstractions.csproj" />
     <ProjectReference Include="../../src/Runesgalder.Sandbox.Compilation/Runesgalder.Sandbox.Compilation.csproj" />
     <ProjectReference Include="../../src/Runesgalder.Sandbox.Worker/Runesgalder.Sandbox.Worker.csproj" />
+    <ProjectReference Include="../../src/Runesgalder.Sandbox.Containers/Runesgalder.Sandbox.Containers.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Runesgalder.Sandbox.Containers</RootNamespace>
+    <AssemblyName>Runesgalder.Sandbox.Containers</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Runesgalder.Sandbox.Abstractions\Runesgalder.Sandbox.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Runesgalder.Sandbox.Tests" />
+  </ItemGroup>
+
+</Project>
