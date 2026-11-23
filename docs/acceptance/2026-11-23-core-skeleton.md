@@ -36,6 +36,7 @@
 ## Follow-ups
 
 - Send the CLA draft for review before enforcing it.
+- Done on 2026-11-23: see [CLA v1.0](2026-11-23-cla-v1.md).
 - Install and configure CLA Assistant after the text is approved.
 - Review Dependabot security-update settings.
 - Build the Roslyn pipeline, Linux worker, and data-analysis demo.

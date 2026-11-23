@@ -5,8 +5,8 @@ Runesgalder is pre-alpha. The runtime is changing quickly, and the public contra
 ## Before you start
 
 - Open an issue or discussion before substantial work so we can agree the scope and design.
-- The project is preparing a Contributor Licence Agreement (CLA). The draft is [CLA.md](CLA.md) and is not yet in force.
-- Until the CLA is published and enforced, please do not send unsolicited code pull requests. Documentation fixes, bug reports, design feedback, and reproducible test cases are welcome now.
+- All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership and grant the Project Owner the licence described in the CLA.
+- Bug reports, design feedback, and reproducible test cases in issues do not require a CLA unless they are submitted for inclusion in the repository.
 - Security reports must follow [SECURITY.md](SECURITY.md). Do not report vulnerabilities in a public issue.
 
 ## Development requirements
@@ -61,7 +61,7 @@ A pull request should include:
 - Any security or compatibility impact.
 - Documentation changes, if behaviour is user-visible.
 - Confirmation that `dotnet format --verify-no-changes` passes.
-- The CLA status, once the CLA is active.
+- Confirmation that you have accepted the CLA. CLA Assistant will record this automatically once the integration is configured.
 
 Large changes that affect public APIs, security boundaries, release packaging, governance, or the product direction require explicit maintainer acceptance before merge. Small changes can be accepted by the maintainer after CI and local evidence.
 
@@ -71,7 +71,7 @@ The project records acceptance decisions in [docs/acceptance/](docs/acceptance/)
 
 ## Licence
 
-By contributing, you agree that your contributions are licensed under the MIT Licence and the CLA, once the CLA is in force. You retain copyright ownership of your contributions.
+By contributing, you agree that your contributions are licensed under the MIT Licence and the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership of your contributions. All pull requests require acceptance of the CLA; corporate contributors must provide a signed Corporate CLA.
 
 ## Code of conduct
 

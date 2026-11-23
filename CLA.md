@@ -1,14 +1,14 @@
 # Runesgalder Contributor Licence Agreement
 
-> **DRAFT — NOT IN FORCE**
+> **VERSION 1.0 — IN FORCE FROM 2026-11-23**
 >
-> Version: 0.1-draft  
-> Date: 2026-11-23  
-> Project: Runesgalder, https://github.com/karlmoriaty/Runesgalder  
-> Project Owner: karlmoriaty (individual)  
+> Version: 1.0<br>
+> Effective date: 2026-11-23<br>
+> Project: Runesgalder, https://github.com/karlmoriaty/Runesgalder<br>
+> Project Owner: karlmoriaty (individual)<br>
 > Contact: 3070687583@qq.com
 >
-> This draft is provided for review by the project owner. It is not legal advice. Do not rely on it as a final legal agreement until the project owner approves the final text and the CLA is published as a merge gate.
+> This Agreement is published as the project's Contributor Licence Agreement. It is not legal advice. The Project Owner approved this text for use on 2026-11-23; independent legal advice is recommended before relying on it in a dispute. Version 1.0 supersedes the 0.1-draft.
 
 ## 1. Purpose
 
@@ -16,7 +16,7 @@ This Contributor Licence Agreement ("Agreement") clarifies the intellectual prop
 
 This project uses a CLA, not a Developer Certificate of Origin (DCO).
 
-The structure is inspired by the Apache Individual Contributor Licence Agreement and the Harmony Contributor Licence Agreement. The final text must be reviewed and approved by the Project Owner before it is enforced.
+The structure is inspired by the Apache Individual Contributor Licence Agreement and the Harmony Contributor Licence Agreement. This text was reviewed and approved by the Project Owner on 2026-11-23 and is effective from that date.
 
 ## 2. Definitions
 
@@ -74,9 +74,15 @@ You agree to notify the Project Owner if You become aware of any fact or circums
 
 ## 11. Governing law and venue
 
-**Governing law:** to be confirmed by the Project Owner before this Agreement is enforced.
+This Agreement is governed by the laws of the People's Republic of China, excluding its conflict-of-laws rules.
 
-**Venue:** to be confirmed by the Project Owner before this Agreement is enforced.
+For the purposes of this Agreement, "Project Owner's Domicile" means:
+
+(a) the Project Owner's habitual residence (经常居住地) in the People's Republic of China at the time the dispute is filed with the court; or
+
+(b) if the Project Owner has no such habitual residence, the Project Owner's domicile (住所地) in the People's Republic of China at that time.
+
+The people's court with jurisdiction at the Project Owner's Domicile has exclusive jurisdiction over any dispute arising out of or in connection with this Agreement, including non-contractual disputes.
 
 ## 12. Entire agreement and amendments
 
@@ -84,10 +90,10 @@ This Agreement is the entire agreement between You and the Project Owner concern
 
 ## 13. How to sign
 
-The project intends to use CLA Assistant to record individual signatures on a contributor's first pull request. Corporate contributors will need a separate signed Corporate CLA through a process to be confirmed by the Project Owner.
+The project intends to use CLA Assistant to record individual signatures on a contributor's first pull request. Until that integration is configured, the Project Owner may require a contributor to confirm acceptance in the pull request or another recorded channel. Corporate contributors must provide a separate signed Corporate CLA through a process to be confirmed by the Project Owner.
 
-Until the final text is approved and the CLA is enforced as a merge gate, this document is a draft only and does not create a binding agreement.
+This Agreement is effective from 2026-11-23. A Contribution submitted on or after that date is subject to this Agreement.
 
 ## 14. Contact
 
-Questions about this draft should be sent to **3070687583@qq.com**. This is the only contact address for this draft.
+Questions about this Agreement should be sent to **3070687583@qq.com**. This is the only contact address for this Agreement.

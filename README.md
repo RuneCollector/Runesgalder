@@ -133,9 +133,9 @@ No release date is promised. Progress is tracked through daily demos and weekly 
 
 ## Contributing
 
-The project is preparing a Contributor Licence Agreement (CLA). Until the CLA is published and enforced, please open an issue before sending code. Documentation fixes, bug reports, and design feedback are welcome now.
+All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. Please open an issue before substantial work. Bug reports, design feedback, and reproducible test cases are welcome.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). The CLA draft is [CLA.md](CLA.md) and is not yet in force.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). The CLA is [CLA.md](CLA.md).
 
 ## Telemetry
 
