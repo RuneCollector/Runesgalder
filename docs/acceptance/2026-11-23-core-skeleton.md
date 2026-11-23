@@ -19,6 +19,11 @@
 - `dotnet test Runesgalder.sln -c Release --no-build`: 6 passed.
 - CLI `demo`: result `42`, journal events emitted in the expected order.
 - CLI `doctor`: reports .NET 10.0.12, `win-x64`, not a container, and “Sandbox host: not Linux”.
+- Public repository: https://github.com/karlmoriaty/Runesgalder
+- Initial commit: `50d2129`; licence header fix: `65a90d7`.
+- CI passed on Ubuntu and Windows; CodeQL passed.
+- GitHub detects the licence as MIT.
+- Local secret-pattern scan found no credentials; GitHub secret scanning and push protection are enabled.
 - No package, release, or public announcement.
 - No secret used in the demo.
 
@@ -26,13 +31,13 @@
 
 - The sandbox engine is not implemented. No isolation claim is made.
 - The Flow API is a skeleton and will grow. The namespace change to `Runesgalder` is intentional and must be kept stable.
-- CI and secret scanning are not yet in place; they are required before the first push.
+- Dependabot security updates are currently disabled; version updates are configured. This should be reviewed separately.
 
 ## Follow-ups
 
-- Add CI, CodeQL, Dependabot, issue/PR templates, and CODEOWNERS.
-- Run formatting and secret scanning before the first push.
 - Send the CLA draft for review before enforcing it.
+- Install and configure CLA Assistant after the text is approved.
+- Review Dependabot security-update settings.
 - Build the Roslyn pipeline, Linux worker, and data-analysis demo.
 
 ## Decision notes

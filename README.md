@@ -93,6 +93,7 @@ Runesgalder is independent and is not affiliated with or endorsed by Microsoft.
 - [Project plan](docs/PROJECT_PLAN.md) — scope, v0.1 budget, delivery gates, and risks.
 - [Architecture decisions](docs/adr/README.md) — the decisions behind the unified runtime, equality of the two surfaces, Linux-first delivery, isolation tiers, and Native AOT roles.
 - [Threat model](security/threat-model.md) — assets, trust boundaries, threats, mitigations, and residual risk.
+- [Preliminary name check](docs/name-check.md) — engineering search results, not legal or trademark clearance.
 - [Demo log](docs/demos/) — daily evidence.
 - [Acceptance log](docs/acceptance/) — what was accepted, by whom, and with what evidence.
 
