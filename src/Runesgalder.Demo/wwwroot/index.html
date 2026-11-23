@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Runesgalder demo — data analysis in a sandbox</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="brand">Runesgalder</p>
+      <h1>Data analysis, guarded end to end</h1>
+      <p class="lede">
+        A fake model plans, writes C#, and asks the sandbox for a chart. Every step streams live.
+        The generated code only runs inside the worker container.
+      </p>
+    </div>
+    <div class="actions">
+      <button id="run-analysis" class="primary">Run the analysis</button>
+      <button id="run-refusal" class="secondary">Inject policy refusal</button>
+      <p id="doctor" class="doctor">checking the worker image…</p>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel timeline">
+      <div class="panel-head">
+        <h2>Run timeline</h2>
+        <span id="status" class="status">idle</span>
+      </div>
+      <ol id="events" class="events"></ol>
+    </section>
+
+    <section class="panel result">
+      <div class="panel-head">
+        <h2>Result</h2>
+        <span id="sandbox-time" class="status"></span>
+      </div>
+      <div id="result" class="result-body">
+        <p class="muted">Run the analysis to see the plan, the script, and the chart it produces.</p>
+      </div>
+    </section>
+
+    <section class="panel data">
+      <div class="panel-head">
+        <h2>Dataset</h2>
+        <span class="status">synthetic · <code>sales.csv</code></span>
+      </div>
+      <div id="data" class="data-body"><p class="muted">loading…</p></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>
+      Requires Docker and the worker image
+      <code>runesgalder-worker:dev</code>. Build it with
+      <code>dotnet publish src/Runesgalder.Sandbox.Worker -c Release -o artifacts/worker</code>
+      and <code>docker build -f src/Runesgalder.Sandbox.Worker/Dockerfile -t runesgalder-worker:dev artifacts/worker</code>.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

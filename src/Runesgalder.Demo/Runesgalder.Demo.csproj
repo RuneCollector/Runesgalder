@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Runesgalder.Demo</RootNamespace>
+    <AssemblyName>Runesgalder.Demo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Runesgalder.Flow\Runesgalder.Flow.csproj" />
+    <ProjectReference Include="..\Runesgalder.Sandbox.Abstractions\Runesgalder.Sandbox.Abstractions.csproj" />
+    <ProjectReference Include="..\Runesgalder.Sandbox.Compilation\Runesgalder.Sandbox.Compilation.csproj" />
+    <ProjectReference Include="..\Runesgalder.Sandbox.Containers\Runesgalder.Sandbox.Containers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Runesgalder.Demo.Tests" />
+  </ItemGroup>
+
+</Project>
