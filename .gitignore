@@ -1,0 +1,46 @@
+# Build output
+bin/
+obj/
+artifacts/
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.nupkg
+*.snupkg
+
+# IDE and editor state
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local packages and generated sites
+.packages/
+node_modules/
+docs/_site/
+site/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pfx
+*.snk
+*.key
+*.pem
+secrets/
+.secrets/
+
+# OS noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
