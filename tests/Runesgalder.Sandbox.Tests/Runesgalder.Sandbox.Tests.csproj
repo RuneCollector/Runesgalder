@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Runesgalder.Abstractions/Runesgalder.Abstractions.csproj" />
     <ProjectReference Include="../../src/Runesgalder.Sandbox.Abstractions/Runesgalder.Sandbox.Abstractions.csproj" />
+    <ProjectReference Include="../../src/Runesgalder.Sandbox.Compilation/Runesgalder.Sandbox.Compilation.csproj" />
   </ItemGroup>
 </Project>

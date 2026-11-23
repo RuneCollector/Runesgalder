@@ -1309,10 +1309,11 @@ CSV 中放一行：
 
 ### Day 3-4：编译 spike
 
-- Roslyn 编译一个实现 `IAnalysis` 的样例；结构化诊断。
-- 禁用符号分析；契约校验；源码/引用哈希。
-- 在一次性容器中编译；无网络；限时/限量。
-- 记录编译延迟基线。
+- Roslyn 编译一个实现 `IAnalysis` 的样例；结构化诊断。（已完成：本地进程内管线，`RGS0000`–`RGS0004` + 编译器诊断）
+- 禁用符号分析；契约校验；源码/引用哈希。（已完成）
+- 在一次性容器中编译；无网络；限时/限量。（未完成：随 Day 5 隔离边界一起做）
+- 记录编译延迟基线。（未完成：待容器内编译）
+- 发现：.NET 10 中 `System.IO.File` 位于 `System.Private.CoreLib`，引用白名单与禁用命名空间分析都不构成安全边界；执行隔离仍是必需项（ADR-0006）。
 
 ### Day 5：执行 spike
 
@@ -1382,7 +1383,7 @@ CSV 中放一行：
 - ADR-0003：Linux 优先、跨平台 client、Windows 原生后置。
 - ADR-0004：隔离档位与安全声明边界。
 - ADR-0005：Native AOT 的角色与限制。
-- ADR-0006：Typed Code Step 契约与编译管线。
+- ADR-0006：Typed Code Step 契约与编译管线。（已接受：`docs/adr/0006-roslyn-compilation.md`）
 - ADR-0007：Journal、幂等与恢复语义。
 - ADR-0008：MCP 表面与传输。
 - ADR-0009：MIT、CLA、名称可用性与 public 仓库。
