@@ -42,10 +42,12 @@ public sealed class RunManagerTests
 
         var cancelled = harness.Runs.Cancel(record.Id);
         Assert.NotNull(cancelled);
-        Assert.Equal("cancelled", cancelled.Error!.Code);
+        Assert.True(cancelled.Status is RunStatus.Running or RunStatus.Cancelled);
 
         await record.TerminalTask.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.Equal(RunStatus.Cancelled, record.Snapshot().Status);
+        var snapshot = record.Snapshot();
+        Assert.Equal(RunStatus.Cancelled, snapshot.Status);
+        Assert.Equal("cancelled", snapshot.Error!.Code);
         Assert.Equal(1, executor.Calls);
     }
 
