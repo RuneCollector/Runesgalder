@@ -10,6 +10,7 @@ This directory records the decisions that shape Runesgalder. Each record states 
 | [0004](0004-isolation-tiers.md) | Isolation tiers and conservative claims | Accepted |
 | [0005](0005-native-aot-role.md) | Native AOT roles in the sandbox | Accepted |
 | [0006](0006-roslyn-compilation.md) | Typed code step contract and compile pipeline | Accepted |
+| [0007](0007-journal-and-recovery.md) | Journal, idempotency, and recovery semantics | Accepted |
 
 ## Adding a record
 

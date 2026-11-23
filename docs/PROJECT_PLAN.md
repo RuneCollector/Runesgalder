@@ -1323,9 +1323,9 @@ CSV 中放一行：
 
 ### Day 6-7：Flow 骨架
 
-- `IChatClient` Agent；`Then` / `Retry` / `Checkpoint` 三个组合子先跑通。
-- SQLite Journal；幂等键；恢复测试。
-- 事件流；基础 OTel。
+- `IChatClient` Agent；`Then` / `Retry` / `Checkpoint` 三个组合子先跑通。（已完成：`AgentStep` 基于 `Microsoft.Extensions.AI.Abstractions`；`Checkpoint` 支持前缀检查点）
+- SQLite Journal；幂等键；恢复测试。（已完成：WAL + `user_version` 1；`checkpoints` 以幂等键为主键；跨进程重开恢复测试）
+- 事件流；基础 OTel。（已完成：`BeginRun` 实时事件流；`ActivitySource` 无 SDK 依赖，span/属性由测试验证）
 
 ### Day 8-9：Demo 骨架
 
@@ -1384,7 +1384,7 @@ CSV 中放一行：
 - ADR-0004：隔离档位与安全声明边界。
 - ADR-0005：Native AOT 的角色与限制。
 - ADR-0006：Typed Code Step 契约与编译管线。（已接受：`docs/adr/0006-roslyn-compilation.md`）
-- ADR-0007：Journal、幂等与恢复语义。
+- ADR-0007：Journal、幂等与恢复语义。（已接受：`docs/adr/0007-journal-and-recovery.md`）
 - ADR-0008：MCP 表面与传输。
 - ADR-0009：MIT、CLA、名称可用性与 public 仓库。
 - ADR-0010：数据分析 Demo 作为 v0.1 验收契约。

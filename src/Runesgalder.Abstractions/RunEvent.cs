@@ -63,6 +63,60 @@ public sealed record StepRetryScheduled(
     string Message,
     DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
 
+/// <summary>A model call has started.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="StepId">The step identifier.</param>
+/// <param name="StepName">The step name.</param>
+/// <param name="ModelId">The provider-reported model identifier, when known.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record ModelCallStarted(
+    RunId RunId,
+    StepId StepId,
+    string StepName,
+    string? ModelId,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>A model call completed.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="StepId">The step identifier.</param>
+/// <param name="StepName">The step name.</param>
+/// <param name="ModelId">The provider-reported model identifier, when known.</param>
+/// <param name="InputTokens">The reported input token count, when known.</param>
+/// <param name="OutputTokens">The reported output token count, when known.</param>
+/// <param name="Duration">The model call duration.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record ModelCallCompleted(
+    RunId RunId,
+    StepId StepId,
+    string StepName,
+    string? ModelId,
+    long? InputTokens,
+    long? OutputTokens,
+    TimeSpan Duration,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>A checkpoint was stored after the flow prefix completed.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="Key">The idempotency key.</param>
+/// <param name="FlowName">The flow name.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record CheckpointStored(
+    RunId RunId,
+    string Key,
+    string FlowName,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>A stored checkpoint replaced flow execution for this run.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="Key">The idempotency key.</param>
+/// <param name="FlowName">The flow name.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record CheckpointRestored(
+    RunId RunId,
+    string Key,
+    string FlowName,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
 /// <summary>A run completed successfully.</summary>
 /// <param name="RunId">The run identifier.</param>
 /// <param name="Duration">The total run duration.</param>

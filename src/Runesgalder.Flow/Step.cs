@@ -49,6 +49,10 @@ public abstract class Step<TIn, TOut>
         var started = Stopwatch.GetTimestamp();
         var startedAt = DateTimeOffset.UtcNow;
 
+        using var activity = FlowDiagnostics.ActivitySource.StartActivity(Name, ActivityKind.Internal);
+        activity?.SetTag(FlowDiagnostics.RunIdTag, context.RunId.ToString());
+        activity?.SetTag(FlowDiagnostics.StepIdTag, _id.ToString());
+
         await context.Journal.AppendAsync(
             new StepStarted(context.RunId, _id, Name, startedAt),
             cancellationToken).ConfigureAwait(false);
@@ -68,6 +72,7 @@ public abstract class Step<TIn, TOut>
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, "cancelled");
             await context.Journal.AppendAsync(
                 new StepFailed(
                     context.RunId,
@@ -81,6 +86,7 @@ public abstract class Step<TIn, TOut>
         }
         catch (Exception exception)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
             await context.Journal.AppendAsync(
                 new StepFailed(
                     context.RunId,

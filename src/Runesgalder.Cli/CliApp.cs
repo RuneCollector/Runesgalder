@@ -18,6 +18,7 @@ internal static class CliApp
         {
             "doctor" => RunDoctor(),
             "demo" => await RunDemoAsync().ConfigureAwait(false),
+            "resume" => await RunResumeAsync().ConfigureAwait(false),
             _ => UnknownCommand(args[0])
         };
     }
@@ -29,6 +30,7 @@ internal static class CliApp
         Console.WriteLine("Usage:");
         Console.WriteLine("  runesgalder doctor   Print runtime and platform details.");
         Console.WriteLine("  runesgalder demo     Run a typed flow and print its journal.");
+        Console.WriteLine("  runesgalder resume   Run a checkpointed flow twice and show the restored prefix.");
     }
 
     private static int RunDoctor()
@@ -59,11 +61,7 @@ internal static class CliApp
         Console.WriteLine(result);
         Console.WriteLine();
         Console.WriteLine("Journal:");
-
-        foreach (var runEvent in journal.Snapshot())
-        {
-            Console.WriteLine($"  {runEvent.Timestamp:O} {Describe(runEvent)}");
-        }
+        PrintJournal(journal);
 
         var policy = SandboxPolicy.Default;
         Console.WriteLine();
@@ -73,6 +71,46 @@ internal static class CliApp
         return 0;
     }
 
+    private static async Task<int> RunResumeAsync()
+    {
+        var store = new InMemoryCheckpointStore();
+        var prepareCalls = 0;
+        var flow = Flow.Start(Step.Define<string, int>(
+                    "prepare",
+                    input =>
+                    {
+                        prepareCalls++;
+                        return int.Parse(input, CultureInfo.InvariantCulture);
+                    }))
+            .Checkpoint(store, "cli-demo")
+            .Then(Step.Define<int, string>(
+                "format",
+                value => $"Result: {(value * 2).ToString(CultureInfo.InvariantCulture)}"));
+
+        Console.WriteLine($"Flow: {flow.Name}");
+
+        var first = new InMemoryJournal();
+        Console.WriteLine($"First run:  {await flow.RunAsync("21", first).ConfigureAwait(false)}");
+
+        var second = new InMemoryJournal();
+        Console.WriteLine($"Second run: {await flow.RunAsync("21", second).ConfigureAwait(false)}");
+        Console.WriteLine($"prepare calls: {prepareCalls.ToString(CultureInfo.InvariantCulture)}");
+        Console.WriteLine();
+        Console.WriteLine("First run journal:");
+        PrintJournal(first);
+        Console.WriteLine("Second run journal:");
+        PrintJournal(second);
+        return 0;
+    }
+
+    private static void PrintJournal(InMemoryJournal journal)
+    {
+        foreach (var runEvent in journal.Snapshot())
+        {
+            Console.WriteLine($"  {runEvent.Timestamp:O} {Describe(runEvent)}");
+        }
+    }
+
     private static string Describe(RunEvent runEvent) => runEvent switch
     {
         RunStarted started => $"RunStarted flow={started.FlowName}",
@@ -80,6 +118,13 @@ internal static class CliApp
         StepCompleted completed => $"StepCompleted {completed.StepName} duration={completed.Duration.TotalMilliseconds:0.000}ms",
         StepFailed failed => $"StepFailed {failed.StepName} code={failed.ErrorCode} message={failed.Message}",
         StepRetryScheduled retry => $"StepRetryScheduled {retry.StepId} attempt={retry.Attempt}",
+        ModelCallStarted started => $"ModelCallStarted {started.StepName} model={started.ModelId ?? "unknown"}",
+        ModelCallCompleted completed =>
+            $"ModelCallCompleted {completed.StepName} tokens={completed.InputTokens?.ToString(CultureInfo.InvariantCulture) ?? "-"}/" +
+            $"{completed.OutputTokens?.ToString(CultureInfo.InvariantCulture) ?? "-"} " +
+            $"duration={completed.Duration.TotalMilliseconds:0.000}ms",
+        CheckpointStored stored => $"CheckpointStored key={stored.Key}",
+        CheckpointRestored restored => $"CheckpointRestored key={restored.Key}",
         RunCompleted completed => $"RunCompleted duration={completed.Duration.TotalMilliseconds:0.000}ms",
         RunFailed failed => $"RunFailed code={failed.ErrorCode} message={failed.Message}",
         _ => runEvent.GetType().Name
