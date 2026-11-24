@@ -156,6 +156,110 @@ public sealed class ScriptCompilerTests
         Assert.Contains(result.Diagnostics, d => d.Id == "RGS0004");
     }
 
+    [Theory]
+    [InlineData("System.IO")]
+    [InlineData("System.Net")]
+    [InlineData("System.Reflection")]
+    [InlineData("System.Diagnostics")]
+    [InlineData("System.Runtime.InteropServices")]
+    [InlineData("System.Runtime.Loader")]
+    [InlineData("System.Management")]
+    [InlineData("Microsoft.Win32")]
+    public void RejectsEveryBannedNamespace(string bannedNamespace)
+    {
+        var source = $$"""
+            using {{bannedNamespace}};
+            using System.Threading.Tasks;
+            using Runesgalder.Sandbox;
+
+            public sealed class Analysis : IAnalysis
+            {
+                public Task<AnalysisResult> RunAsync(ITable table, IScriptContext context) =>
+                    Task.FromResult(new AnalysisResult("rows", []));
+            }
+            """;
+
+        var result = new ScriptCompiler().Compile(source);
+
+        Assert.False(result.Success);
+        Assert.Null(result.Assembly);
+        var diagnostic = Assert.Single(result.Diagnostics, d => d.Id == "RGS0001");
+        Assert.Equal(ScriptDiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.Equal(1, diagnostic.Line);
+        Assert.Contains($"'{bannedNamespace}'", diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RejectsABannedNamespaceImportedUnderAnAlias()
+    {
+        var source = """
+            using FS = System.IO;
+            using System.Threading.Tasks;
+            using Runesgalder.Sandbox;
+
+            public sealed class Analysis : IAnalysis
+            {
+                public Task<AnalysisResult> RunAsync(ITable table, IScriptContext context)
+                {
+                    var text = FS.File.ReadAllText("data.csv");
+                    return Task.FromResult(new AnalysisResult(text, []));
+                }
+            }
+            """;
+
+        var result = new ScriptCompiler().Compile(source);
+
+        Assert.False(result.Success);
+        Assert.Contains(result.Diagnostics, d => d.Id == "RGS0001" && d.Line == 1);
+    }
+
+    [Fact]
+    public void RejectsABannedTypeImportedStatically()
+    {
+        var source = """
+            using static System.IO.File;
+            using System.Threading.Tasks;
+            using Runesgalder.Sandbox;
+
+            public sealed class Analysis : IAnalysis
+            {
+                public Task<AnalysisResult> RunAsync(ITable table, IScriptContext context)
+                {
+                    var text = ReadAllText("data.csv");
+                    return Task.FromResult(new AnalysisResult(text, []));
+                }
+            }
+            """;
+
+        var result = new ScriptCompiler().Compile(source);
+
+        Assert.False(result.Success);
+        Assert.Contains(result.Diagnostics, d => d.Id == "RGS0001" && d.Line == 1);
+    }
+
+    [Fact]
+    public void RejectsABannedNamespaceQualifiedWithTheGlobalAlias()
+    {
+        var source = """
+            using System.Threading.Tasks;
+            using Runesgalder.Sandbox;
+
+            public sealed class Analysis : IAnalysis
+            {
+                public Task<AnalysisResult> RunAsync(ITable table, IScriptContext context)
+                {
+                    var text = global::System.IO.File.ReadAllText("data.csv");
+                    return Task.FromResult(new AnalysisResult(text, []));
+                }
+            }
+            """;
+
+        var result = new ScriptCompiler().Compile(source);
+
+        Assert.False(result.Success);
+        Assert.Contains(result.Diagnostics, d => d.Id == "RGS0001" && d.Line == 8);
+    }
+
     [Fact]
     public void ReportsSyntaxErrorsWithAPosition()
     {
