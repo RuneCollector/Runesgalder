@@ -4,7 +4,7 @@ This directory will contain non-destructive test cases that attempt effects the 
 
 ## Status
 
-The corpus is planned and not yet populated. The sandbox engine and Linux worker are under construction. Do not run these cases against a shared host or a system you do not own.
+The corpus is planned and not yet populated as case files. The first non-destructive escape checks live in `tests/Runesgalder.Sandbox.Tests/EscapeTests.cs` and run only where Docker with a Linux daemon and the `runesgalder-worker:dev` image are available; elsewhere they are skipped. Do not run these cases against a shared host or a system you do not own.
 
 ## Purpose
 
