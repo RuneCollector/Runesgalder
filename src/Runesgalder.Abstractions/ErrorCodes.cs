@@ -9,6 +9,9 @@ public static class ErrorCodes
     /// <summary>A flow run was cancelled.</summary>
     public const string FlowCancelled = "flow.cancelled";
 
+    /// <summary>A flow or step exceeded its timeout.</summary>
+    public const string FlowTimedOut = "flow.timed_out";
+
     /// <summary>The sandbox rejected the submitted source before compilation.</summary>
     public const string SandboxSourceRejected = "sandbox.source_rejected";
 

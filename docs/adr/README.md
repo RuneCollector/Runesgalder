@@ -14,7 +14,7 @@ This directory records the decisions that shape Runesgalder. Each record states 
 | [0008](0008-mcp-surface.md) | MCP surface | Accepted |
 | [0009](0009-licence-and-contribution-terms.md) | Licence, contribution terms, and naming | Accepted |
 | [0010](0010-data-analysis-contract.md) | Data-analysis script contract and table API | Accepted |
-| [0011](0011-flow-combinators.md) | Flow combinators for branching, fan-out, timeouts, and fallbacks | Proposed |
+| [0011](0011-flow-combinators.md) | Flow combinators for branching, fan-out, timeouts, and fallbacks | Accepted |
 
 ## Adding a record
 

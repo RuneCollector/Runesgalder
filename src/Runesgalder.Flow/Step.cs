@@ -25,6 +25,20 @@ public abstract class Step<TIn, TOut>
     /// <summary>The step identifier.</summary>
     public StepId Id => _id;
 
+    /// <summary>Limits this step with a deadline without adding another pair of step events.</summary>
+    /// <param name="timeout">The time budget; positive and finite.</param>
+    /// <returns>A step that throws <see cref="System.TimeoutException"/> when the deadline expires.</returns>
+    /// <remarks>Caller cancellation always wins over the deadline.</remarks>
+    public Step<TIn, TOut> Timeout(TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.Zero || timeout == System.Threading.Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "The timeout must be positive and finite.");
+        }
+
+        return new TimedStep(this, timeout);
+    }
+
     /// <summary>Executes the step body.</summary>
     /// <param name="input">The step input.</param>
     /// <param name="context">The run context.</param>
@@ -84,6 +98,20 @@ public abstract class Step<TIn, TOut>
                 CancellationToken.None).ConfigureAwait(false);
             throw;
         }
+        catch (TimeoutException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await context.Journal.AppendAsync(
+                new StepFailed(
+                    context.RunId,
+                    _id,
+                    Name,
+                    ErrorCodes.FlowTimedOut,
+                    exception.Message,
+                    DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
         catch (Exception exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
@@ -97,6 +125,26 @@ public abstract class Step<TIn, TOut>
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
             throw;
+        }
+    }
+
+    private sealed class TimedStep(Step<TIn, TOut> inner, TimeSpan timeout) : Step<TIn, TOut>(inner.Name)
+    {
+        public override async ValueTask<TOut> ExecuteAsync(
+            TIn input,
+            FlowContext context,
+            CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            linked.CancelAfter(timeout);
+            try
+            {
+                return await inner.ExecuteAsync(input, context, linked.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && linked.IsCancellationRequested)
+            {
+                throw new TimeoutException($"The step '{Name}' timed out after {timeout}.");
+            }
         }
     }
 }

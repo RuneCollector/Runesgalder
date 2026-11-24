@@ -1,7 +1,8 @@
 # ADR-0011: Flow combinators for branching, fan-out, timeouts, and fallbacks
 
-- Status: Proposed (awaiting acceptance)
+- Status: Accepted
 - Date: 2026-11-24
+- Accepted: 2026-11-24
 - Deciders: karlmoriaty
 
 ## Context

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -72,13 +73,123 @@ public sealed class Flow<TIn, TOut>
             });
     }
 
+    /// <summary>Chooses between two steps using this flow's output.</summary>
+    /// <typeparam name="TNext">The chosen step's output type.</typeparam>
+    /// <param name="predicate">Selects the true branch when it returns <see langword="true"/>.</param>
+    /// <param name="whenTrue">The step to run when the predicate returns <see langword="true"/>.</param>
+    /// <param name="whenFalse">The step to run when the predicate returns <see langword="false"/>.</param>
+    /// <returns>A flow that runs exactly one of the two steps.</returns>
+    public Flow<TIn, TNext> Branch<TNext>(
+        Func<TOut, bool> predicate,
+        Step<TOut, TNext> whenTrue,
+        Step<TOut, TNext> whenFalse)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        ArgumentNullException.ThrowIfNull(whenTrue);
+        ArgumentNullException.ThrowIfNull(whenFalse);
+        var previous = _pipeline;
+        return new Flow<TIn, TNext>(
+            $"{Name} ? {whenTrue.Name} : {whenFalse.Name}",
+            async (input, context, cancellationToken) =>
+            {
+                var intermediate = await previous(input, context, cancellationToken).ConfigureAwait(false);
+                var chosen = predicate(intermediate) ? whenTrue : whenFalse;
+                return await chosen.RunAsync(intermediate, context, cancellationToken).ConfigureAwait(false);
+            });
+    }
+
+    /// <summary>Runs every branch concurrently with this flow's output and collects the results in declaration order.</summary>
+    /// <param name="branches">The branches; at least one, and none may be null.</param>
+    /// <returns>A flow that produces one result per branch.</returns>
+    /// <remarks>
+    /// The first failure stops the run: sibling branches observe a cancelled token and the
+    /// failure of the earliest declared faulted branch is rethrown. Caller cancellation always wins.
+    /// </remarks>
+    public Flow<TIn, TOut[]> FanOut(params Step<TOut, TOut>[] branches)
+    {
+        ArgumentNullException.ThrowIfNull(branches);
+        var copy = (Step<TOut, TOut>[])branches.Clone();
+        if (copy.Length == 0)
+        {
+            throw new ArgumentException("FanOut needs at least one branch.", nameof(branches));
+        }
+
+        if (Array.Exists(copy, static branch => branch is null))
+        {
+            throw new ArgumentException("FanOut branches must not be null.", nameof(branches));
+        }
+
+        var previous = _pipeline;
+        var flowName = $"{Name} || {string.Join(" | ", copy.Select(static branch => branch.Name))}";
+        return new Flow<TIn, TOut[]>(
+            flowName,
+            async (input, context, cancellationToken) =>
+            {
+                var intermediate = await previous(input, context, cancellationToken).ConfigureAwait(false);
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var tasks = new Task<TOut>[copy.Length];
+                for (var index = 0; index < copy.Length; index++)
+                {
+                    tasks[index] = RunBranchAsync(copy[index], intermediate, context, linked);
+                }
+
+                try
+                {
+                    return await Task.WhenAll(tasks).ConfigureAwait(false);
+                }
+                catch
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    foreach (var task in tasks)
+                    {
+                        if (task.IsFaulted)
+                        {
+                            ExceptionDispatchInfo.Capture(task.Exception!.InnerExceptions[0]).Throw();
+                        }
+                    }
+
+                    throw;
+                }
+            });
+
+        static async Task<TOut> RunBranchAsync(
+            Step<TOut, TOut> branch,
+            TOut input,
+            FlowContext context,
+            CancellationTokenSource linked)
+        {
+            try
+            {
+                return await branch.RunAsync(input, context, linked.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                await linked.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
+        }
+    }
+
     /// <summary>Retries the whole flow when it throws.</summary>
     /// <param name="maxAttempts">The maximum number of attempts, at least one.</param>
     /// <param name="delay">The delay between attempts.</param>
     /// <returns>A flow with retry semantics.</returns>
-    public Flow<TIn, TOut> Retry(int maxAttempts, TimeSpan delay = default)
+    public Flow<TIn, TOut> Retry(int maxAttempts, TimeSpan delay = default) =>
+        Retry(maxAttempts, static _ => true, delay);
+
+    /// <summary>Retries the whole flow when it throws and the predicate accepts the failure.</summary>
+    /// <param name="maxAttempts">The maximum number of attempts, at least one.</param>
+    /// <param name="shouldRetry">Decides whether a failure is retried; an exception thrown by the predicate fails the run.</param>
+    /// <param name="delay">The delay between attempts.</param>
+    /// <returns>A flow with retry semantics.</returns>
+    public Flow<TIn, TOut> Retry(
+        int maxAttempts,
+        Func<Exception, bool> shouldRetry,
+        TimeSpan delay = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxAttempts, 1);
+        ArgumentNullException.ThrowIfNull(shouldRetry);
         var pipeline = _pipeline;
         var stepId = StepId.FromName(Name);
         var flowName = Name;
@@ -97,8 +208,13 @@ public sealed class Flow<TIn, TOut>
                     {
                         throw;
                     }
-                    catch (Exception exception) when (attempt < maxAttempts)
+                    catch (Exception exception)
                     {
+                        if (attempt >= maxAttempts || !shouldRetry(exception))
+                        {
+                            throw;
+                        }
+
                         await context.Journal.AppendAsync(
                             new StepRetryScheduled(
                                 context.RunId,
@@ -113,6 +229,84 @@ public sealed class Flow<TIn, TOut>
                         {
                             await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                         }
+                    }
+                }
+            });
+    }
+
+    /// <summary>Limits the whole flow to a deadline.</summary>
+    /// <param name="timeout">The time budget; positive and finite.</param>
+    /// <returns>A flow that throws <see cref="TimeoutException"/> when the deadline expires.</returns>
+    /// <remarks>Caller cancellation always wins over the deadline.</remarks>
+    public Flow<TIn, TOut> Timeout(TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.Zero || timeout == System.Threading.Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "The timeout must be positive and finite.");
+        }
+
+        var pipeline = _pipeline;
+        var flowName = Name;
+        return new Flow<TIn, TOut>(
+            flowName,
+            async (input, context, cancellationToken) =>
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                linked.CancelAfter(timeout);
+                try
+                {
+                    return await pipeline(input, context, linked.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && linked.IsCancellationRequested)
+                {
+                    throw new TimeoutException($"The flow '{flowName}' timed out after {timeout}.");
+                }
+            });
+    }
+
+    /// <summary>Runs an alternative step with the original input when this flow fails.</summary>
+    /// <param name="alternative">The recovery step.</param>
+    /// <param name="when">Filters which failures trigger recovery; every failure does when omitted.</param>
+    /// <returns>A flow that recovers or rethrows.</returns>
+    /// <remarks>
+    /// Caller cancellation never triggers the fallback. When both the flow and the alternative fail,
+    /// the run throws an <see cref="AggregateException"/> with the primary failure first.
+    /// </remarks>
+    public Flow<TIn, TOut> Fallback(Step<TIn, TOut> alternative, Func<Exception, bool>? when = null)
+    {
+        ArgumentNullException.ThrowIfNull(alternative);
+        var pipeline = _pipeline;
+        var flowName = Name;
+        return new Flow<TIn, TOut>(
+            flowName,
+            async (input, context, cancellationToken) =>
+            {
+                try
+                {
+                    return await pipeline(input, context, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception primary)
+                {
+                    if (when is not null && !when(primary))
+                    {
+                        throw;
+                    }
+
+                    try
+                    {
+                        return await alternative.RunAsync(input, context, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception fallback)
+                    {
+                        throw new AggregateException(primary, fallback);
                     }
                 }
             });
@@ -198,6 +392,14 @@ public sealed class Flow<TIn, TOut>
             activity?.SetStatus(ActivityStatusCode.Error, "cancelled");
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowCancelled, "The run was cancelled.", DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+        catch (TimeoutException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await journal.AppendAsync(
+                new RunFailed(runId, ErrorCodes.FlowTimedOut, exception.Message, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
             throw;
         }
