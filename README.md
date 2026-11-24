@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/crest-dark-1024.png">
+    <img src="assets/brand/crest-1024.png" alt="Runesgalder: an Algiz stave between two four-feathered wings, with an ember diamond beneath the foot" width="170">
+  </picture>
+</p>
+
 # Runesgalder
 
 A governed runtime for agent workflows and safe C# code execution.
@@ -120,6 +127,7 @@ Runesgalder is independent and is not affiliated with or endorsed by Microsoft.
 ## Design documents
 
 - [Project plan](docs/PROJECT_PLAN.md) — scope, v0.1 budget, delivery gates, and risks.
+- [Brand](docs/brand.md) — the mark, colour, clear space, and where each asset is used.
 - [Architecture decisions](docs/adr/README.md) — the decisions behind the unified runtime, equality of the two surfaces, Linux-first delivery, isolation tiers, and Native AOT roles.
 - [Observability](docs/observability.md) — the trace and metric contract, host enablement, and the local-only default.
 - [Threat model](security/threat-model.md) — assets, trust boundaries, threats, mitigations, and residual risk.
@@ -131,6 +139,7 @@ Runesgalder is independent and is not affiliated with or endorsed by Microsoft.
 
 ```text
 .github/                          CI, CodeQL, Dependabot, issue and PR templates
+assets/brand/                     Crest, lockups, app icons, social header
 src/
   Runesgalder.Abstractions/        Shared runtime primitives
   Runesgalder.Flow/                Typed flow orchestration

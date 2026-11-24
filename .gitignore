@@ -18,6 +18,9 @@ coverage/
 *.userosscache
 *.sln.docstates
 
+# Local design scratch
+vibe_images/
+
 # Local packages and generated sites
 .packages/
 node_modules/
