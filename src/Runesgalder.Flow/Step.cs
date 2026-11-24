@@ -66,6 +66,7 @@ public abstract class Step<TIn, TOut>
         using var activity = FlowDiagnostics.ActivitySource.StartActivity(Name, ActivityKind.Internal);
         activity?.SetTag(FlowDiagnostics.RunIdTag, context.RunId.ToString());
         activity?.SetTag(FlowDiagnostics.StepIdTag, _id.ToString());
+        activity?.SetTag(FlowDiagnostics.StepNameTag, Name);
 
         await context.Journal.AppendAsync(
             new StepStarted(context.RunId, _id, Name, startedAt),
@@ -74,14 +75,16 @@ public abstract class Step<TIn, TOut>
         try
         {
             var output = await ExecuteAsync(input, context, cancellationToken).ConfigureAwait(false);
+            var elapsed = Stopwatch.GetElapsedTime(started);
             await context.Journal.AppendAsync(
                 new StepCompleted(
                     context.RunId,
                     _id,
                     Name,
-                    Stopwatch.GetElapsedTime(started),
+                    elapsed,
                     DateTimeOffset.UtcNow),
                 cancellationToken).ConfigureAwait(false);
+            FlowMetrics.RecordStep(context.FlowName, Name, FlowMetrics.OkOutcome, elapsed);
             return output;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -96,6 +99,11 @@ public abstract class Step<TIn, TOut>
                     "The step was cancelled.",
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordStep(
+                context.FlowName,
+                Name,
+                ErrorCodes.FlowCancelled,
+                Stopwatch.GetElapsedTime(started));
             throw;
         }
         catch (TimeoutException exception)
@@ -110,11 +118,19 @@ public abstract class Step<TIn, TOut>
                     exception.Message,
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordStep(
+                context.FlowName,
+                Name,
+                ErrorCodes.FlowTimedOut,
+                Stopwatch.GetElapsedTime(started));
             throw;
         }
         catch (BudgetExceededException exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.SetTag(FlowDiagnostics.BudgetDimensionTag, exception.Dimension.ToString());
+            activity?.SetTag(FlowDiagnostics.BudgetLimitTag, (double)exception.Limit);
+            activity?.SetTag(FlowDiagnostics.BudgetUsedTag, (double)exception.Used);
             await context.Journal.AppendAsync(
                 new StepFailed(
                     context.RunId,
@@ -124,6 +140,11 @@ public abstract class Step<TIn, TOut>
                     exception.Message,
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordStep(
+                context.FlowName,
+                Name,
+                ErrorCodes.FlowBudgetExceeded,
+                Stopwatch.GetElapsedTime(started));
             throw;
         }
         catch (ApprovalDeniedException exception)
@@ -138,6 +159,11 @@ public abstract class Step<TIn, TOut>
                     exception.Message,
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordStep(
+                context.FlowName,
+                Name,
+                ErrorCodes.FlowApprovalDenied,
+                Stopwatch.GetElapsedTime(started));
             throw;
         }
         catch (Exception exception)
@@ -152,6 +178,11 @@ public abstract class Step<TIn, TOut>
                     exception.Message,
                     DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordStep(
+                context.FlowName,
+                Name,
+                ErrorCodes.FlowStepFailed,
+                Stopwatch.GetElapsedTime(started));
             throw;
         }
     }

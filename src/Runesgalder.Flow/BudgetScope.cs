@@ -87,6 +87,7 @@ internal sealed class BudgetScope(Budget budget, FlowContext context)
             await context.Journal.AppendAsync(
                 new BudgetWarning(context.RunId, dimension, warn!.Value, used, DateTimeOffset.UtcNow),
                 cancellationToken).ConfigureAwait(false);
+            FlowMetrics.RecordBudgetWarning(context.FlowName, dimension);
         }
 
         if (max is { } limit && used > limit)
@@ -94,6 +95,7 @@ internal sealed class BudgetScope(Budget budget, FlowContext context)
             await context.Journal.AppendAsync(
                 new BudgetExceeded(context.RunId, dimension, limit, used, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordBudgetExceeded(context.FlowName, dimension);
             throw new BudgetExceededException(dimension, limit, used);
         }
     }

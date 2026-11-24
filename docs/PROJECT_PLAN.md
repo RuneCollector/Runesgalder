@@ -1350,7 +1350,7 @@ CSV 中放一行：
 
 ### Phase 2：治理与恢复
 
-- 7 个组合子、预算、审批、恢复、策略拒绝、MCP、OTel、逃逸测试 v0。（进行中：ADR-0008「MCP surface」已于 2026-11-23 验收；MCP v0.1 已实现（四工具 stdio，64 项测试与冒烟通过），逃逸测试 v0 已完成；恢复语义测试已加固（checkpoint 不落盘于失败/取消、SQLite 失败运行终态、并发追加不丢失）；编译期策略拒绝覆盖已补齐（八个禁用命名空间及 alias/static/global:: 变体）；ADR-0011「Flow combinators」已于 2026-11-24 验收并实现（Branch/FanOut/Timeout/Fallback/Retry 谓词，新增 flow.timed_out）；ADR-0012「Budgets and approvals」已于 2026-11-24 验收并实现（Budget/RequireApproval、四个新事件、显式 token/USD 计费、flow.budget_exceeded 与 flow.approval_denied，Flow 测试 85 项通过）；其余（OTel）按 9.4 节奏推进）
+- 7 个组合子、预算、审批、恢复、策略拒绝、MCP、OTel、逃逸测试 v0。（进行中：ADR-0008「MCP surface」已于 2026-11-23 验收；MCP v0.1 已实现（四工具 stdio，64 项测试与冒烟通过），逃逸测试 v0 已完成；恢复语义测试已加固（checkpoint 不落盘于失败/取消、SQLite 失败运行终态、并发追加不丢失）；编译期策略拒绝覆盖已补齐（八个禁用命名空间及 alias/static/global:: 变体）；ADR-0011「Flow combinators」已于 2026-11-24 验收并实现（Branch/FanOut/Timeout/Fallback/Retry 谓词，新增 flow.timed_out）；ADR-0012「Budgets and approvals」已于 2026-11-24 验收并实现（Budget/RequireApproval、四个新事件、显式 token/USD 计费、flow.budget_exceeded 与 flow.approval_denied）；ADR-0013「Observability」已于 2026-11-24 验收并实现（BCL Meter 8 个指标、治理 span 属性、无 OTel SDK 依赖、遥测默认关闭，Flow 测试 94 项通过）；导出器由宿主自行接入，Sandbox/MCP 指标按各自 ADR 推进）
 
 ---
 

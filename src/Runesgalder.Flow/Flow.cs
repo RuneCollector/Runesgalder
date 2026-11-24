@@ -361,6 +361,7 @@ public sealed class Flow<TIn, TOut>
                                 seconds,
                                 DateTimeOffset.UtcNow),
                             CancellationToken.None).ConfigureAwait(false);
+                        FlowMetrics.RecordBudgetExceeded(context.FlowName, BudgetDimension.Wall);
                         throw new BudgetExceededException(BudgetDimension.Wall, seconds, seconds);
                     }
                 }
@@ -433,6 +434,7 @@ public sealed class Flow<TIn, TOut>
                                 ApprovalDecision.TimedOut,
                                 DateTimeOffset.UtcNow),
                             CancellationToken.None).ConfigureAwait(false);
+                        FlowMetrics.RecordApproval(flowName, ApprovalDecision.TimedOut);
                         throw new ApprovalDeniedException(approvalId, ApprovalDecision.TimedOut);
                     }
                 }
@@ -445,12 +447,14 @@ public sealed class Flow<TIn, TOut>
                     await context.Journal.AppendAsync(
                         new ApprovalResolved(context.RunId, approvalId, outcome, DateTimeOffset.UtcNow),
                         CancellationToken.None).ConfigureAwait(false);
+                    FlowMetrics.RecordApproval(flowName, outcome);
                     throw new ApprovalDeniedException(approvalId, outcome);
                 }
 
                 await context.Journal.AppendAsync(
                     new ApprovalResolved(context.RunId, approvalId, ApprovalDecision.Approved, DateTimeOffset.UtcNow),
                     CancellationToken.None).ConfigureAwait(false);
+                FlowMetrics.RecordApproval(flowName, ApprovalDecision.Approved);
                 return await pipeline(input, context, cancellationToken).ConfigureAwait(false);
             });
     }
@@ -539,6 +543,7 @@ public sealed class Flow<TIn, TOut>
             await context.Journal.AppendAsync(
                 new BudgetWarning(context.RunId, BudgetDimension.Wall, seconds, seconds, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordBudgetWarning(context.FlowName, BudgetDimension.Wall);
         }
         catch (Exception)
         {
@@ -600,7 +605,7 @@ public sealed class Flow<TIn, TOut>
         IJournal journal,
         CancellationToken cancellationToken)
     {
-        var context = new FlowContext(runId, journal);
+        var context = new FlowContext(runId, journal) { FlowName = Name };
         var started = Stopwatch.GetTimestamp();
 
         using var activity = FlowDiagnostics.ActivitySource.StartActivity(
@@ -619,46 +624,63 @@ public sealed class Flow<TIn, TOut>
             await journal.AppendAsync(
                 new RunCompleted(runId, Stopwatch.GetElapsedTime(started), DateTimeOffset.UtcNow),
                 cancellationToken).ConfigureAwait(false);
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, FlowMetrics.OkOutcome);
+            FlowMetrics.RecordRun(Name, FlowMetrics.OkOutcome);
             return output;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, ErrorCodes.FlowCancelled);
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowCancelled, "The run was cancelled.", DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordRun(Name, ErrorCodes.FlowCancelled);
             throw;
         }
         catch (TimeoutException exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, ErrorCodes.FlowTimedOut);
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowTimedOut, exception.Message, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordRun(Name, ErrorCodes.FlowTimedOut);
             throw;
         }
         catch (BudgetExceededException exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, ErrorCodes.FlowBudgetExceeded);
+            activity?.SetTag(FlowDiagnostics.BudgetDimensionTag, exception.Dimension.ToString());
+            activity?.SetTag(FlowDiagnostics.BudgetLimitTag, (double)exception.Limit);
+            activity?.SetTag(FlowDiagnostics.BudgetUsedTag, (double)exception.Used);
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowBudgetExceeded, exception.Message, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordRun(Name, ErrorCodes.FlowBudgetExceeded);
             throw;
         }
         catch (ApprovalDeniedException exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, ErrorCodes.FlowApprovalDenied);
+            activity?.SetTag(FlowDiagnostics.ApprovalIdTag, exception.ApprovalId.ToString());
+            activity?.SetTag(FlowDiagnostics.ApprovalDecisionTag, exception.Decision.ToString());
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowApprovalDenied, exception.Message, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordRun(Name, ErrorCodes.FlowApprovalDenied);
             throw;
         }
         catch (Exception exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.SetTag(FlowDiagnostics.RunOutcomeTag, ErrorCodes.FlowStepFailed);
             await journal.AppendAsync(
                 new RunFailed(runId, ErrorCodes.FlowStepFailed, exception.Message, DateTimeOffset.UtcNow),
                 CancellationToken.None).ConfigureAwait(false);
+            FlowMetrics.RecordRun(Name, ErrorCodes.FlowStepFailed);
             throw;
         }
     }

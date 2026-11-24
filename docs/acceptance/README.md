@@ -46,3 +46,4 @@ Use `TEMPLATE.md` for each record. Name records `YYYY-MM-DD-short-name.md`. Link
 - [2026-11-23 — MCP surface](2026-11-23-adr-0008-mcp.md)
 - [2026-11-24 — Flow combinators](2026-11-24-adr-0011-flow-combinators.md)
 - [2026-11-24 — Budgets and approvals](2026-11-24-adr-0012-budgets-and-approvals.md)
+- [2026-11-24 — Observability](2026-11-24-adr-0013-observability.md)
