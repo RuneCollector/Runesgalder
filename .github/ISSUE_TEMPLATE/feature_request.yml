@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Large changes to public APIs, security boundaries, release process, or governance require maintainer acceptance before implementation. See [CONTRIBUTING.md](https://github.com/karlmoriaty/Runesgalder/blob/main/CONTRIBUTING.md).
+        Large changes to public APIs, security boundaries, release process, or governance require maintainer acceptance before implementation. See [CONTRIBUTING.md](https://github.com/RuneCollector/Runesgalder/blob/main/CONTRIBUTING.md).
 
   - type: textarea
     id: problem
