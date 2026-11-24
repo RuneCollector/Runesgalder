@@ -112,6 +112,34 @@ public abstract class Step<TIn, TOut>
                 CancellationToken.None).ConfigureAwait(false);
             throw;
         }
+        catch (BudgetExceededException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await context.Journal.AppendAsync(
+                new StepFailed(
+                    context.RunId,
+                    _id,
+                    Name,
+                    ErrorCodes.FlowBudgetExceeded,
+                    exception.Message,
+                    DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+        catch (ApprovalDeniedException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await context.Journal.AppendAsync(
+                new StepFailed(
+                    context.RunId,
+                    _id,
+                    Name,
+                    ErrorCodes.FlowApprovalDenied,
+                    exception.Message,
+                    DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
         catch (Exception exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);

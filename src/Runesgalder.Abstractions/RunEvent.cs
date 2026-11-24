@@ -117,6 +117,56 @@ public sealed record CheckpointRestored(
     string FlowName,
     DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
 
+/// <summary>Usage crossed a budget warn threshold.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="Dimension">The dimension that crossed its threshold.</param>
+/// <param name="Limit">The warn threshold; wall values are in seconds.</param>
+/// <param name="Used">The usage at the crossing; wall values are in seconds.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record BudgetWarning(
+    RunId RunId,
+    BudgetDimension Dimension,
+    decimal Limit,
+    decimal Used,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>Usage crossed a hard budget limit.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="Dimension">The dimension that was exceeded.</param>
+/// <param name="Limit">The hard limit; wall values are in seconds.</param>
+/// <param name="Used">The usage at the crossing; wall values are in seconds.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record BudgetExceeded(
+    RunId RunId,
+    BudgetDimension Dimension,
+    decimal Limit,
+    decimal Used,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>A governed segment is waiting for a human decision.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="ApprovalId">The approval identifier.</param>
+/// <param name="Requirement">The short stable requirement label.</param>
+/// <param name="Reason">Human-readable detail about why approval is needed.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record ApprovalRequested(
+    RunId RunId,
+    ApprovalId ApprovalId,
+    string Requirement,
+    string Reason,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
+/// <summary>An approval request received its final decision.</summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="ApprovalId">The approval identifier.</param>
+/// <param name="Decision">The decision; timeouts are recorded as <see cref="ApprovalDecision.TimedOut"/>.</param>
+/// <param name="Timestamp">The UTC timestamp.</param>
+public sealed record ApprovalResolved(
+    RunId RunId,
+    ApprovalId ApprovalId,
+    ApprovalDecision Decision,
+    DateTimeOffset Timestamp) : RunEvent(RunId, Timestamp);
+
 /// <summary>A run completed successfully.</summary>
 /// <param name="RunId">The run identifier.</param>
 /// <param name="Duration">The total run duration.</param>

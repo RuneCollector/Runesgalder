@@ -16,6 +16,10 @@ internal static class RunEventCodec
         ModelCallCompleted value => ("model.call_completed", JsonSerializer.Serialize(value, CheckpointJson.Options)),
         CheckpointStored value => ("checkpoint.stored", JsonSerializer.Serialize(value, CheckpointJson.Options)),
         CheckpointRestored value => ("checkpoint.restored", JsonSerializer.Serialize(value, CheckpointJson.Options)),
+        BudgetWarning value => ("budget.warning", JsonSerializer.Serialize(value, CheckpointJson.Options)),
+        BudgetExceeded value => ("budget.exceeded", JsonSerializer.Serialize(value, CheckpointJson.Options)),
+        ApprovalRequested value => ("approval.requested", JsonSerializer.Serialize(value, CheckpointJson.Options)),
+        ApprovalResolved value => ("approval.resolved", JsonSerializer.Serialize(value, CheckpointJson.Options)),
         RunCompleted value => ("run.completed", JsonSerializer.Serialize(value, CheckpointJson.Options)),
         RunFailed value => ("run.failed", JsonSerializer.Serialize(value, CheckpointJson.Options)),
         _ => throw new InvalidOperationException($"The event type {runEvent.GetType()} has no journal encoding.")
@@ -32,6 +36,10 @@ internal static class RunEventCodec
         "model.call_completed" => Deserialize<ModelCallCompleted>(payload),
         "checkpoint.stored" => Deserialize<CheckpointStored>(payload),
         "checkpoint.restored" => Deserialize<CheckpointRestored>(payload),
+        "budget.warning" => Deserialize<BudgetWarning>(payload),
+        "budget.exceeded" => Deserialize<BudgetExceeded>(payload),
+        "approval.requested" => Deserialize<ApprovalRequested>(payload),
+        "approval.resolved" => Deserialize<ApprovalResolved>(payload),
         "run.completed" => Deserialize<RunCompleted>(payload),
         "run.failed" => Deserialize<RunFailed>(payload),
         _ => throw new InvalidOperationException($"The event tag '{type}' is not recognised by this schema version.")

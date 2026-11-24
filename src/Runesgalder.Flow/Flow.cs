@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Runesgalder;
 
@@ -312,6 +313,239 @@ public sealed class Flow<TIn, TOut>
             });
     }
 
+    /// <summary>Governs the whole flow with hard limits and optional warn thresholds.</summary>
+    /// <param name="budget">The budget; at least one hard limit, and every set value must be positive.</param>
+    /// <returns>A flow that stops when a hard limit is crossed.</returns>
+    /// <remarks>
+    /// Wall time expires the segment like a deadline. Token and USD usage is charged explicitly by
+    /// steps through <see cref="FlowContext.ChargeTokensAsync"/> and <see cref="FlowContext.ChargeUsdAsync"/>.
+    /// Caller cancellation always wins over the wall deadline.
+    /// </remarks>
+    /// <exception cref="BudgetExceededException">Thrown when the flow crosses a hard limit.</exception>
+    public Flow<TIn, TOut> Budget(Budget budget)
+    {
+        ArgumentNullException.ThrowIfNull(budget);
+        ValidateBudget(budget);
+        var pipeline = _pipeline;
+        var flowName = Name;
+        return new Flow<TIn, TOut>(
+            flowName,
+            async (input, context, cancellationToken) =>
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var wall = budget.MaxWall;
+                if (wall is { } maxWall)
+                {
+                    linked.CancelAfter(maxWall);
+                }
+
+                using var registration = BudgetRegistry.Push(new BudgetScope(budget, context));
+                var warning = WarnWallAsync(budget, context, linked);
+                try
+                {
+                    try
+                    {
+                        return await pipeline(input, context, linked.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (
+                        wall is not null
+                        && !cancellationToken.IsCancellationRequested
+                        && linked.IsCancellationRequested)
+                    {
+                        var seconds = (decimal)wall.Value.TotalSeconds;
+                        await context.Journal.AppendAsync(
+                            new BudgetExceeded(
+                                context.RunId,
+                                BudgetDimension.Wall,
+                                seconds,
+                                seconds,
+                                DateTimeOffset.UtcNow),
+                            CancellationToken.None).ConfigureAwait(false);
+                        throw new BudgetExceededException(BudgetDimension.Wall, seconds, seconds);
+                    }
+                }
+                finally
+                {
+                    linked.Cancel();
+                    await warning.ConfigureAwait(false);
+                }
+            });
+    }
+
+    /// <summary>Requires a human decision before the whole flow runs.</summary>
+    /// <param name="approver">The approver asked for a decision.</param>
+    /// <param name="requirement">A short stable label such as <c>sandbox.execute</c>.</param>
+    /// <param name="reason">Human-readable detail about why approval is needed.</param>
+    /// <param name="timeout">The wait budget; positive and finite. Expiry denies by default.</param>
+    /// <returns>A flow that runs only when the request is approved.</returns>
+    /// <remarks>
+    /// Wrapper order is explicit: <c>.RequireApproval(...).Budget(...)</c> counts the approval wait
+    /// against <c>MaxWall</c>; <c>.Budget(...).RequireApproval(...)</c> does not.
+    /// </remarks>
+    /// <exception cref="ApprovalDeniedException">Thrown when the request is denied or times out.</exception>
+    public Flow<TIn, TOut> RequireApproval(
+        IApprover approver,
+        string requirement,
+        string reason,
+        TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(approver);
+        ArgumentException.ThrowIfNullOrWhiteSpace(requirement);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (timeout <= TimeSpan.Zero || timeout == System.Threading.Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "The timeout must be positive and finite.");
+        }
+
+        var pipeline = _pipeline;
+        var flowName = Name;
+        return new Flow<TIn, TOut>(
+            flowName,
+            async (input, context, cancellationToken) =>
+            {
+                var approvalId = ApprovalId.New();
+                await context.Journal.AppendAsync(
+                    new ApprovalRequested(
+                        context.RunId,
+                        approvalId,
+                        requirement,
+                        reason,
+                        DateTimeOffset.UtcNow),
+                    cancellationToken).ConfigureAwait(false);
+
+                ApprovalDecision decision;
+                using (var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    linked.CancelAfter(timeout);
+                    try
+                    {
+                        decision = await approver
+                            .RequestAsync(new ApprovalRequest(approvalId, requirement, reason), linked.Token)
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (
+                        !cancellationToken.IsCancellationRequested && linked.IsCancellationRequested)
+                    {
+                        await context.Journal.AppendAsync(
+                            new ApprovalResolved(
+                                context.RunId,
+                                approvalId,
+                                ApprovalDecision.TimedOut,
+                                DateTimeOffset.UtcNow),
+                            CancellationToken.None).ConfigureAwait(false);
+                        throw new ApprovalDeniedException(approvalId, ApprovalDecision.TimedOut);
+                    }
+                }
+
+                if (decision != ApprovalDecision.Approved)
+                {
+                    var outcome = decision == ApprovalDecision.TimedOut
+                        ? ApprovalDecision.TimedOut
+                        : ApprovalDecision.Denied;
+                    await context.Journal.AppendAsync(
+                        new ApprovalResolved(context.RunId, approvalId, outcome, DateTimeOffset.UtcNow),
+                        CancellationToken.None).ConfigureAwait(false);
+                    throw new ApprovalDeniedException(approvalId, outcome);
+                }
+
+                await context.Journal.AppendAsync(
+                    new ApprovalResolved(context.RunId, approvalId, ApprovalDecision.Approved, DateTimeOffset.UtcNow),
+                    CancellationToken.None).ConfigureAwait(false);
+                return await pipeline(input, context, cancellationToken).ConfigureAwait(false);
+            });
+    }
+
+    private static void ValidateBudget(Budget budget)
+    {
+        if (budget.MaxTokens is null && budget.MaxUsd is null && budget.MaxWall is null)
+        {
+            throw new ArgumentException("A budget needs at least one hard limit.", nameof(budget));
+        }
+
+        if (budget.MaxTokens is { } maxTokens && maxTokens <= 0)
+        {
+            throw new ArgumentException("MaxTokens must be positive.", nameof(budget));
+        }
+
+        if (budget.MaxUsd is { } maxUsd && maxUsd <= 0)
+        {
+            throw new ArgumentException("MaxUsd must be positive.", nameof(budget));
+        }
+
+        if (budget.MaxWall is { } maxWall && (maxWall <= TimeSpan.Zero || maxWall == System.Threading.Timeout.InfiniteTimeSpan))
+        {
+            throw new ArgumentException("MaxWall must be positive and finite.", nameof(budget));
+        }
+
+        if (budget.WarnTokens is { } warnTokens)
+        {
+            if (warnTokens <= 0)
+            {
+                throw new ArgumentException("WarnTokens must be positive.", nameof(budget));
+            }
+
+            if (budget.MaxTokens is { } hardTokens && warnTokens >= hardTokens)
+            {
+                throw new ArgumentException("WarnTokens must be below MaxTokens.", nameof(budget));
+            }
+        }
+
+        if (budget.WarnUsd is { } warnUsd)
+        {
+            if (warnUsd <= 0)
+            {
+                throw new ArgumentException("WarnUsd must be positive.", nameof(budget));
+            }
+
+            if (budget.MaxUsd is { } hardUsd && warnUsd >= hardUsd)
+            {
+                throw new ArgumentException("WarnUsd must be below MaxUsd.", nameof(budget));
+            }
+        }
+
+        if (budget.WarnWall is { } warnWallSpan)
+        {
+            if (warnWallSpan <= TimeSpan.Zero || warnWallSpan == System.Threading.Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentException("WarnWall must be positive and finite.", nameof(budget));
+            }
+
+            if (budget.MaxWall is { } hardWall && warnWallSpan >= hardWall)
+            {
+                throw new ArgumentException("WarnWall must be below MaxWall.", nameof(budget));
+            }
+        }
+    }
+
+    private static async Task WarnWallAsync(Budget budget, FlowContext context, CancellationTokenSource linked)
+    {
+        if (budget.WarnWall is not { } warnWall)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(warnWall, linked.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        var seconds = (decimal)warnWall.TotalSeconds;
+        try
+        {
+            await context.Journal.AppendAsync(
+                new BudgetWarning(context.RunId, BudgetDimension.Wall, seconds, seconds, DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // An advisory warning must not fail the run it warns about.
+        }
+    }
+
     /// <summary>
     /// Persists the output of this flow prefix so a later run with the same idempotency key
     /// returns it instead of repeating model calls or other effects.
@@ -403,6 +637,22 @@ public sealed class Flow<TIn, TOut>
                 CancellationToken.None).ConfigureAwait(false);
             throw;
         }
+        catch (BudgetExceededException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await journal.AppendAsync(
+                new RunFailed(runId, ErrorCodes.FlowBudgetExceeded, exception.Message, DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+        catch (ApprovalDeniedException exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            await journal.AppendAsync(
+                new RunFailed(runId, ErrorCodes.FlowApprovalDenied, exception.Message, DateTimeOffset.UtcNow),
+                CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
         catch (Exception exception)
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
@@ -481,5 +731,8 @@ public static class Flow
 
 internal static class CheckpointJson
 {
-    public static JsonSerializerOptions Options { get; } = new(JsonSerializerDefaults.Web);
+    public static JsonSerializerOptions Options { get; } = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
 }

@@ -5,6 +5,7 @@ namespace Runesgalder.FlowTests;
 public sealed class SqliteJournalTests
 {
     private static readonly RunId SampleRun = new(Guid.Parse("6f9619ff-8b86-d011-b42d-00c04fc964ff"));
+    private static readonly ApprovalId SampleApproval = new(Guid.Parse("1f9619ff-8b86-d011-b42d-00c04fc964ff"));
     private static readonly DateTimeOffset At = new(2026, 11, 23, 10, 30, 0, TimeSpan.FromHours(1));
 
     public static TheoryData<RunEvent> EventSamples => new()
@@ -20,6 +21,10 @@ public sealed class SqliteJournalTests
         new ModelCallCompleted(SampleRun, StepId.FromName("plan"), "plan", null, null, null, TimeSpan.Zero, At),
         new CheckpointStored(SampleRun, "job-1", "demo", At),
         new CheckpointRestored(SampleRun, "job-1", "demo", At),
+        new BudgetWarning(SampleRun, BudgetDimension.Tokens, 10m, 11m, At),
+        new BudgetExceeded(SampleRun, BudgetDimension.Wall, 30m, 30m, At),
+        new ApprovalRequested(SampleRun, SampleApproval, "sandbox.execute", "Unit test approval", At),
+        new ApprovalResolved(SampleRun, SampleApproval, ApprovalDecision.TimedOut, At),
         new RunCompleted(SampleRun, TimeSpan.FromSeconds(2), At),
         new RunFailed(SampleRun, ErrorCodes.FlowStepFailed, "boom", At)
     };

@@ -12,6 +12,12 @@ public static class ErrorCodes
     /// <summary>A flow or step exceeded its timeout.</summary>
     public const string FlowTimedOut = "flow.timed_out";
 
+    /// <summary>A flow or step crossed a hard budget limit.</summary>
+    public const string FlowBudgetExceeded = "flow.budget_exceeded";
+
+    /// <summary>An approval request was denied or timed out.</summary>
+    public const string FlowApprovalDenied = "flow.approval_denied";
+
     /// <summary>The sandbox rejected the submitted source before compilation.</summary>
     public const string SandboxSourceRejected = "sandbox.source_rejected";
 

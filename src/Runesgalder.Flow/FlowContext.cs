@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Runesgalder;
 
 /// <summary>Mutable per-run context passed to every step.</summary>
@@ -21,4 +23,34 @@ public sealed class FlowContext
 
     /// <summary>Arbitrary state shared between steps in the same run.</summary>
     public IDictionary<string, object?> Items { get; } = new Dictionary<string, object?>(StringComparer.Ordinal);
+
+    /// <summary>Charges token usage to every active budget scope, innermost first.</summary>
+    /// <param name="tokens">The token count to charge; not negative.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task; with no active budget scope the call is a no-op.</returns>
+    /// <exception cref="BudgetExceededException">Thrown when a scope crosses a hard limit.</exception>
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "Charging stays on the run context so step bodies charge through the context they already hold.")]
+    public ValueTask ChargeTokensAsync(long tokens, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(tokens);
+        return BudgetRegistry.ChargeAsync(BudgetDimension.Tokens, tokens, cancellationToken);
+    }
+
+    /// <summary>Charges cost in US dollars to every active budget scope, innermost first.</summary>
+    /// <param name="usd">The cost to charge; not negative.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task; with no active budget scope the call is a no-op.</returns>
+    /// <exception cref="BudgetExceededException">Thrown when a scope crosses a hard limit.</exception>
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "Charging stays on the run context so step bodies charge through the context they already hold.")]
+    public ValueTask ChargeUsdAsync(decimal usd, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(usd);
+        return BudgetRegistry.ChargeAsync(BudgetDimension.Usd, usd, cancellationToken);
+    }
 }
