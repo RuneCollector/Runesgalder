@@ -121,6 +121,7 @@ Runesgalder is independent and is not affiliated with or endorsed by Microsoft.
 
 - [Project plan](docs/PROJECT_PLAN.md) — scope, v0.1 budget, delivery gates, and risks.
 - [Architecture decisions](docs/adr/README.md) — the decisions behind the unified runtime, equality of the two surfaces, Linux-first delivery, isolation tiers, and Native AOT roles.
+- [Observability](docs/observability.md) — the trace and metric contract, host enablement, and the local-only default.
 - [Threat model](security/threat-model.md) — assets, trust boundaries, threats, mitigations, and residual risk.
 - [Preliminary name check](docs/name-check.md) — engineering search results, not legal or trademark clearance.
 - [Demo log](docs/demos/) — daily evidence.
@@ -173,7 +174,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.
 
 ## Telemetry
 
-Runesgalder has no phone-home behaviour. The intended default is local logs and local OpenTelemetry only. Remote telemetry, if ever added, must be opt-in and reviewed separately.
+Runesgalder has no phone-home behaviour. The intended default is local logs and local OpenTelemetry only. Remote telemetry, if ever added, must be opt-in and reviewed separately. The trace and metric contract and the host enablement snippet are in [docs/observability.md](docs/observability.md).
 
 ## Licence
 

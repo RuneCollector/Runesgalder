@@ -130,3 +130,4 @@ Negative:
 - Run and step spans set `flow.outcome` and `step.name`; budget failures set dimension, limit, and used on both spans; approval denials set the identifier and decision on the run span.
 - Flow tests: 94 passed (previously 85), including five `MeterListener` tests and four `ActivityListener` tests.
 - Solution build and `dotnet format --verify-no-changes` are clean.
+- `docs/observability.md` landed the same day: span and instrument mapping, outcome vocabulary, correlation with the journal, host enablement snippet, cardinality guidance, and the local-only default. The README links it from the design documents and telemetry sections.
