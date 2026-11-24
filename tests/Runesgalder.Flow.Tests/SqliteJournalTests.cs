@@ -164,6 +164,38 @@ public sealed class SqliteJournalTests
     }
 
     [Fact]
+    public async Task PersistsAFailedRunWithoutARunCompletedEvent()
+    {
+        using var workspace = new TempDirectory();
+        var path = Path.Combine(workspace.Root, "runs.db");
+        var flow = Flow.Start(Step.Define<int, int>(
+            "boom",
+            _ => throw new InvalidOperationException("boom")));
+        RunId runId;
+
+        await using (var journal = new SqliteJournal(path))
+        {
+            var run = flow.BeginRun(1, journal);
+            runId = run.RunId;
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await run.Result);
+        }
+
+        await using var reopened = new SqliteJournal(path);
+        var events = new List<RunEvent>();
+        await foreach (var runEvent in reopened.ReadAsync(runId))
+        {
+            events.Add(runEvent);
+        }
+
+        Assert.Collection(
+            events,
+            e => Assert.IsType<RunStarted>(e),
+            e => Assert.Equal("boom", Assert.IsType<StepStarted>(e).StepName),
+            e => Assert.Equal(ErrorCodes.FlowStepFailed, Assert.IsType<StepFailed>(e).ErrorCode),
+            e => Assert.Equal(ErrorCodes.FlowStepFailed, Assert.IsType<RunFailed>(e).ErrorCode));
+    }
+
+    [Fact]
     public async Task RejectsANewerSchemaVersion()
     {
         using var workspace = new TempDirectory();
