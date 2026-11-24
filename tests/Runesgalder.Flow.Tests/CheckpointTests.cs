@@ -101,6 +101,57 @@ public sealed class CheckpointTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => flow.RunAsync(1));
     }
 
+    [Fact]
+    public async Task DoesNotStoreACheckpointWhenThePrefixFails()
+    {
+        var store = new InMemoryCheckpointStore();
+        var attempts = 0;
+        var flow = Flow.Start(Step.Define<int, int>(
+                "fragile",
+                value =>
+                {
+                    attempts++;
+                    if (attempts == 1)
+                    {
+                        throw new InvalidOperationException("first run fails");
+                    }
+
+                    return value + 1;
+                }))
+            .Checkpoint(store, "retryable");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => flow.RunAsync(1));
+        Assert.Null(await store.FindAsync("retryable"));
+
+        Assert.Equal(2, await flow.RunAsync(1));
+        Assert.Equal(2, attempts);
+        Assert.NotNull(await store.FindAsync("retryable"));
+    }
+
+    [Fact]
+    public async Task DoesNotStoreACheckpointWhenThePrefixIsCancelled()
+    {
+        var store = new InMemoryCheckpointStore();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cancellation = new CancellationTokenSource();
+        var flow = Flow.Start(Step.Define<int, int>(
+                "slow",
+                async (_, _, cancellationToken) =>
+                {
+                    entered.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                    return 0;
+                }))
+            .Checkpoint(store, "cancelled");
+
+        var run = flow.RunAsync(0, journal: null, cancellationToken: cancellation.Token);
+        await entered.Task;
+        await cancellation.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run);
+        Assert.Null(await store.FindAsync("cancelled"));
+    }
+
     private static async Task<int> CountCheckpointsAsync(InMemoryCheckpointStore store, string flowName)
     {
         var count = 0;

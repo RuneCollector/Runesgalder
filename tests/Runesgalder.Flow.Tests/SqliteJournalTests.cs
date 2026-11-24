@@ -142,6 +142,28 @@ public sealed class SqliteJournalTests
     }
 
     [Fact]
+    public async Task DoesNotPersistACheckpointForAFailedRun()
+    {
+        using var workspace = new TempDirectory();
+        var path = Path.Combine(workspace.Root, "runs.db");
+
+        await using (var journal = new SqliteJournal(path))
+        {
+            var flow = Flow.Start(Step.Define<int, int>(
+                    "fails",
+                    _ => throw new InvalidOperationException("boom")))
+                .Checkpoint(journal, "failed-job");
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => flow.RunAsync(1));
+        }
+
+        await using (var reopened = new SqliteJournal(path))
+        {
+            Assert.Null(await reopened.FindAsync("failed-job"));
+        }
+    }
+
+    [Fact]
     public async Task RejectsANewerSchemaVersion()
     {
         using var workspace = new TempDirectory();
