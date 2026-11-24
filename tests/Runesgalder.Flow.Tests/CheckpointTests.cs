@@ -102,6 +102,45 @@ public sealed class CheckpointTests
     }
 
     [Fact]
+    public async Task KeepsThePrefixWhenTheSuffixFails()
+    {
+        var store = new InMemoryCheckpointStore();
+        var prefixCalls = 0;
+        var suffixAttempts = 0;
+        var flow = Flow.Start(Step.Define<int, int>(
+                "prefix",
+                value =>
+                {
+                    prefixCalls++;
+                    return value + 1;
+                }))
+            .Checkpoint(store, "partial")
+            .Then(Step.Define<int, int>(
+                "suffix",
+                value =>
+                {
+                    suffixAttempts++;
+                    if (suffixAttempts == 1)
+                    {
+                        throw new InvalidOperationException("suffix fails");
+                    }
+
+                    return value * 10;
+                }));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => flow.RunAsync(1));
+        Assert.NotNull(await store.FindAsync("partial"));
+
+        var rerunJournal = new InMemoryJournal();
+        Assert.Equal(20, await flow.RunAsync(1, rerunJournal));
+
+        Assert.Equal(1, prefixCalls);
+        Assert.Equal(2, suffixAttempts);
+        var restored = Assert.Single(rerunJournal.Snapshot().OfType<CheckpointRestored>());
+        Assert.Equal("partial", restored.Key);
+    }
+
+    [Fact]
     public async Task DoesNotStoreACheckpointWhenThePrefixFails()
     {
         var store = new InMemoryCheckpointStore();
