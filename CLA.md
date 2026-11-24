@@ -4,7 +4,7 @@
 >
 > Version: 1.0<br>
 > Effective date: 2026-11-23<br>
-> Project: Runesgalder, https://github.com/RuneCollector/Runesgalder<br>
+> Project: Runesgalder, https://github.com/Runesgalder/Runesgalder<br>
 > Project Owner: karlmoriaty (individual)<br>
 > Contact: 3070687583@qq.com
 >

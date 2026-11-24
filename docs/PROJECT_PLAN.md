@@ -9,7 +9,7 @@
 > 版权人：karlmoriaty（https://github.com/karlmoriaty）  
 > 联系邮箱：3070687583@qq.com / karlmoriaty@gmail.com  
 > 安全联系：3070687583@qq.com  
-> 仓库：https://github.com/RuneCollector/Runesgalder（public，RuneCollector 组织；2026-11-24 自个人账号迁入）  
+> 仓库：https://github.com/Runesgalder/Runesgalder（public，Runesgalder 组织；2026-11-24 自个人账号迁入，同日组织由 RuneCollector 更名为 Runesgalder，仅服务本项目）  
 > 平台：Linux 优先，跨平台 API  
 > 品牌：Runesgalder（最终名）  
 > 文档语言：英式英语（en-GB）为主；中文 Quickstart；德语（de-DE）Quickstart
@@ -30,7 +30,7 @@
 - 你已于 2026-11-23 明确说“开工”，实现已启动；发版、发文、对外沟通仍需你逐次批准。
 - 名称已定为 Runesgalder；公开前仍会做可用性/商标初查，但不擅自注册商标、域名或社交账号。
 - 此前工作代号 Weft 已废弃；全文统一使用 Runesgalder。
-- 提交并推送到 `RuneCollector/Runesgalder` 已获授权；发版、发文、对外沟通仍需你逐次批准。
+- 提交并推送到 `Runesgalder/Runesgalder` 已获授权；发版、发文、对外沟通仍需你逐次批准。
 
 ---
 
@@ -896,7 +896,7 @@ CI 安全：
 
 ### 10.7 GitHub 身份、提交与公开仓库
 
-- 仓库：`https://github.com/RuneCollector/Runesgalder`，public；2026-11-24 由 `karlmoriaty` 个人账号迁移至 RuneCollector 组织（Owner：karlmoriaty），旧地址 301 重定向。迁移后需在组织上重新安装 CLA Assistant 并重新绑定本仓库。
+- 仓库：`https://github.com/Runesgalder/Runesgalder`，public；2026-11-24 由 `karlmoriaty` 个人账号迁入组织，同日组织由 `RuneCollector` 更名为 `Runesgalder`，组织仅服务本项目（仅 `Runesgalder` 与 `.github` 两个仓库，Owner：karlmoriaty），旧地址 301 重定向。CLA Assistant 按数字 id 关联，改名不需要重新绑定。
 - 提交身份：`karlmoriaty <3070687583@qq.com>`；开工前用 `git config --show-origin user.email` 核对，避免仓库级旧配置覆盖。
 - 认证：HTTPS remote；使用现有 credential store；不把 token 写入 remote URL、文件、日志、CI 输出或制品。SSH 当前不可用，不依赖。
 - 分支：小更新走短分支 + PR + CI，然后自主合并；单人仓库也可直接推送 main，但必须保留测试证据。大更新必须你验收后合并。
@@ -1492,7 +1492,7 @@ CSV 中放一行：
 
 你已于 2026-11-23 确认开工。当前执行边界：
 
-- 已授权：写实现代码、维护 public 仓库、提交并推送到 `RuneCollector/Runesgalder`、配置 CI、安装/配置 CLA Assistant 与 GitHub App。
+- 已授权：写实现代码、维护 public 仓库、提交并推送到 `Runesgalder/Runesgalder`、配置 CI、安装/配置 CLA Assistant 与 GitHub App。
 - 仍需逐次批准：发版、NuGet/GHCR 发布、公开宣传与 launch、域名/商标/社交账号注册或购买。
 - CLA v1.0 已经你于 2026-11-23 审查并生效；CLA Assistant 已启用（GitHub App 仅授权本仓库），其状态检查设为 `main` 的合并门槛；公司 CLA 模板与邮件签署流程已发布；独立法律审阅经你于 2026-11-23 决定暂缓。
 - 我会按 Gate 交付，不会在没有证据的情况下说“完成了”。

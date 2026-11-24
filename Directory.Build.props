@@ -10,9 +10,9 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
-    <RepositoryUrl>https://github.com/RuneCollector/Runesgalder</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Runesgalder/Runesgalder</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/RuneCollector/Runesgalder</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Runesgalder/Runesgalder</PackageProjectUrl>
     <Authors>karlmoriaty</Authors>
     <Company>karlmoriaty</Company>
     <Copyright>Copyright (c) 2026 karlmoriaty</Copyright>

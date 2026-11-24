@@ -177,7 +177,7 @@ No release date is promised. Progress is tracked through daily demos and weekly 
 
 ## Contributing
 
-All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. [CLA Assistant](https://cla-assistant.io/RuneCollector/Runesgalder) records acceptance on your first pull request and reports it as a status check. Contributions made on behalf of a corporation require a signed [Corporate CLA](CORPORATE_CLA.md). Please open an issue before substantial work. Bug reports, design feedback, and reproducible test cases are welcome.
+All code and documentation contributions require acceptance of the [CLA](CLA.md), version 1.0, effective 2026-11-23. [CLA Assistant](https://cla-assistant.io/Runesgalder/Runesgalder) records acceptance on your first pull request and reports it as a status check. Contributions made on behalf of a corporation require a signed [Corporate CLA](CORPORATE_CLA.md). Please open an issue before substantial work. Bug reports, design feedback, and reproducible test cases are welcome.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). The CLA is [CLA.md](CLA.md).
 
