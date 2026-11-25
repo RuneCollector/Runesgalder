@@ -17,6 +17,7 @@ This directory records the decisions that shape Runesgalder. Each record states 
 | [0011](0011-flow-combinators.md) | Flow combinators for branching, fan-out, timeouts, and fallbacks | Accepted |
 | [0012](0012-budgets-and-approvals.md) | Budgets and approvals for v0.1 | Accepted |
 | [0013](0013-observability.md) | Metrics and governance attributes for v0.1 observability | Accepted |
+| [0014](0014-sandbox-observability.md) | Sandbox and MCP observability for v0.1 | Accepted |
 
 ## Adding a record
 
