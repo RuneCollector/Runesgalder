@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Runesgalder.Sandbox;
 using Runesgalder.Sandbox.Compilation;
 
 namespace Runesgalder.Mcp;
@@ -104,10 +105,27 @@ internal sealed partial class RunManager(
         string dataCsv,
         TimeSpan wallClock)
     {
+        using var activity = SandboxDiagnostics.ActivitySource.StartActivity(
+            SandboxDiagnostics.RunSpanName,
+            ActivityKind.Internal);
+        activity?.SetTag(SandboxDiagnostics.RunIdTag, record.Id);
+        activity?.SetTag(SandboxDiagnostics.SandboxBackendTag, SandboxDiagnostics.ContainerBackend);
+        activity?.SetTag(SandboxDiagnostics.SandboxLimitWallTag, wallClock.TotalSeconds);
+        activity?.SetTag(SandboxDiagnostics.SandboxLimitCpuTag, McpLimits.MaxCpuCores);
+        activity?.SetTag(SandboxDiagnostics.SandboxLimitMemoryTag, McpLimits.MaxMemoryBytes);
+        activity?.SetTag(SandboxDiagnostics.SandboxLimitPidsTag, McpLimits.MaxProcesses);
+        activity?.SetTag(SandboxDiagnostics.SandboxLimitOutputTag, McpLimits.MaxOutputBytes);
+
         var compileMs = 0.0;
+        int? exitCode = null;
+        var resultWritten = false;
+        var containerStarted = false;
         try
         {
             await record.Slot.EnterAsync(record.Cancellation.Token).ConfigureAwait(false);
+
+            var queueWait = timeProvider.GetUtcNow() - record.CreatedAt;
+            SandboxMetrics.RecordQueueWait(queueWait < TimeSpan.Zero ? TimeSpan.Zero : queueWait);
 
             if (!record.MarkRunning())
             {
@@ -137,9 +155,12 @@ internal sealed partial class RunManager(
                 return;
             }
 
+            containerStarted = true;
             var outcome = await executor
                 .ExecuteAsync(compilation.Assembly!, dataCsv, wallClock, record.Cancellation.Token)
                 .ConfigureAwait(false);
+            exitCode = outcome.ExitCode;
+            resultWritten = outcome.ResultWritten;
 
             var sandboxMs = 0.0;
             WorkerPayload? payload = null;
@@ -234,8 +255,80 @@ internal sealed partial class RunManager(
         finally
         {
             record.Slot.Dispose();
+            InstrumentTerminal(activity, record, exitCode, resultWritten, containerStarted);
         }
     }
+
+    private void InstrumentTerminal(
+        Activity? activity,
+        RunRecord record,
+        int? exitCode,
+        bool resultWritten,
+        bool containerStarted)
+    {
+        var snapshot = record.Snapshot();
+        if (!RunStatus.IsTerminal(snapshot.Status))
+        {
+            return;
+        }
+
+        var outcome = OutcomeOf(snapshot);
+        var terminalAt = record.TerminalAt ?? timeProvider.GetUtcNow();
+        var wall = terminalAt - record.CreatedAt;
+        if (wall < TimeSpan.Zero)
+        {
+            wall = TimeSpan.Zero;
+        }
+
+        var outputBytes = snapshot.Resource?.OutputBytes ?? 0;
+        var denied = outcome is "policy_denied" or "source_too_large" or "data_too_large";
+        activity?.SetTag(
+            SandboxDiagnostics.PolicyDecisionTag,
+            denied ? SandboxDiagnostics.DenyDecision : SandboxDiagnostics.AllowDecision);
+        if (denied)
+        {
+            activity?.SetTag(SandboxDiagnostics.PolicyReasonTag, outcome);
+        }
+
+        activity?.SetTag(SandboxDiagnostics.SandboxOutcomeTag, outcome);
+        if (exitCode is not null)
+        {
+            activity?.SetTag(SandboxDiagnostics.SandboxExitCodeTag, exitCode.Value);
+        }
+
+        activity?.SetTag(SandboxDiagnostics.SandboxResultWrittenTag, resultWritten);
+        if (containerStarted && outcome is "run_timeout" or "cancelled")
+        {
+            activity?.SetTag(
+                SandboxDiagnostics.SandboxKillReasonTag,
+                outcome == "run_timeout" ? "wall" : "cancelled");
+        }
+
+        activity?.SetTag(SandboxDiagnostics.SandboxUsedWallTag, wall.TotalSeconds);
+        if (resultWritten)
+        {
+            activity?.SetTag(SandboxDiagnostics.SandboxUsedOutputTag, outputBytes);
+        }
+
+        if (outcome != "ok")
+        {
+            activity?.SetStatus(ActivityStatusCode.Error);
+        }
+
+        SandboxMetrics.RecordRun(outcome, wall);
+        if (resultWritten)
+        {
+            SandboxMetrics.RecordOutputBytes(outputBytes, outcome);
+        }
+    }
+
+    private static string OutcomeOf(RunEnvelopeDto snapshot) => snapshot.Status switch
+    {
+        RunStatus.Succeeded => "ok",
+        RunStatus.TimedOut => "run_timeout",
+        RunStatus.Cancelled => "cancelled",
+        _ => snapshot.Error?.Code ?? "internal"
+    };
 
     private void Complete(
         RunRecord record,

@@ -8,4 +8,12 @@
   <ItemGroup>
     <ProjectReference Include="../Runesgalder.Abstractions/Runesgalder.Abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Runesgalder.Sandbox.Compilation" />
+    <InternalsVisibleTo Include="Runesgalder.Sandbox.Containers" />
+    <InternalsVisibleTo Include="runesgalder-mcp" />
+    <InternalsVisibleTo Include="Runesgalder.Sandbox.Tests" />
+    <InternalsVisibleTo Include="Runesgalder.Mcp.Tests" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 
 namespace Runesgalder.Mcp;
 
@@ -8,8 +9,13 @@ internal sealed record McpOptions
     public const string MaxWallClockVariable = "RUNESGALDER_MCP_MAX_WALL_CLOCK_SECONDS";
     public const string DefaultWorkerImage = "runesgalder-worker:dev";
     public const string ServerName = "runesgalder";
-    public const string ServerVersion = "0.1.0-preview.0";
     public const string AnalysisContract = "analysis";
+
+    public static string ServerVersion { get; } =
+        typeof(McpOptions).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            .Split('+')[0] ?? "0.0.0";
 
     public string WorkerImage { get; init; } = DefaultWorkerImage;
 

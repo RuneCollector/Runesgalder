@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  release:
+    name: Build and publish the release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check the tag against the project version
+        run: |
+          version="$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::Tag v$tag does not match the project version $version."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Restore
+        run: dotnet restore Runesgalder.sln
+
+      - name: Build
+        run: dotnet build Runesgalder.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Runesgalder.sln -c Release --no-build
+
+      - name: Check formatting
+        run: dotnet format Runesgalder.sln --verify-no-changes --no-restore
+
+      - name: Publish the MCP server
+        run: dotnet publish src/Runesgalder.Mcp/Runesgalder.Mcp.csproj -c Release -o artifacts/mcp --no-build
+
+      - name: Publish the worker
+        run: dotnet publish src/Runesgalder.Sandbox.Worker/Runesgalder.Sandbox.Worker.csproj -c Release -o artifacts/worker
+
+      - name: Publish the CLI
+        run: dotnet publish src/Runesgalder.Cli/Runesgalder.Cli.csproj -c Release -o artifacts/cli
+
+      - name: Pack the assets
+        run: |
+          mkdir -p artifacts/release
+          (cd artifacts/mcp && zip -qr "../../artifacts/release/runesgalder-mcp-$VERSION.zip" .)
+          (cd artifacts/worker && zip -qr "../../artifacts/release/runesgalder-worker-$VERSION.zip" .)
+          (cd artifacts/cli && zip -qr "../../artifacts/release/runesgalder-cli-$VERSION.zip" .)
+
+      - name: Download the dependency-graph SBOM
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/dependency-graph/sbom" \
+            | jq '.sbom' > "artifacts/release/runesgalder-$VERSION.spdx.json"
+
+      - name: Write checksums
+        run: |
+          cd artifacts/release
+          sha256sum * > SHA256SUMS
+
+      - name: Attest the build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: artifacts/release/*
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          awk '/^## \[0\.1\.0-preview\.0\]/{flag=1;next}/^## \[/{flag=0}flag' CHANGELOG.md > release-notes.md
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" artifacts/release/* \
+            --title "Runesgalder v$VERSION" \
+            --notes-file release-notes.md \
+            --verify-tag \
+            $prerelease

@@ -13,7 +13,12 @@ internal interface ISandboxExecutor
         CancellationToken cancellationToken);
 }
 
-internal sealed record SandboxOutcome(bool TimedOut, bool ResultWritten, string? ResultJson, long OutputBytes);
+internal sealed record SandboxOutcome(
+    bool TimedOut,
+    bool ResultWritten,
+    string? ResultJson,
+    long OutputBytes,
+    int ExitCode = 0);
 
 internal sealed class ContainerSandboxExecutor(string workerImage) : ISandboxExecutor
 {
@@ -66,7 +71,12 @@ internal sealed class ContainerSandboxExecutor(string workerImage) : ISandboxExe
                 json = await File.ReadAllTextAsync(result.ResultPath, cancellationToken).ConfigureAwait(false);
             }
 
-            return new SandboxOutcome(result.TimedOut, result.ResultWritten, json, outputBytes);
+            return new SandboxOutcome(
+                result.TimedOut,
+                result.ResultWritten,
+                json,
+                outputBytes,
+                result.ExitCode);
         }
         finally
         {

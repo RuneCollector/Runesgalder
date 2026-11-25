@@ -1,0 +1,117 @@
+{
+  "tier": "linux-container-hardened",
+  "cases": [
+    {
+      "id": "network-denied-basic",
+      "category": "network",
+      "description": "Attempt an outbound HTTP request with the default policy.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/network-denied-basic/Source.cs",
+      "expected": "policy_denied",
+      "notes": "System.Net is a banned namespace; the request must never reach the loopback port."
+    },
+    {
+      "id": "filesystem-read-denied",
+      "category": "filesystem",
+      "description": "Attempt to read a host file through System.IO.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/filesystem-read-denied/Source.cs",
+      "expected": "policy_denied",
+      "notes": "System.IO is a banned namespace; only the job mount is exposed to the worker."
+    },
+    {
+      "id": "process-creation-denied",
+      "category": "process",
+      "description": "Attempt to start a child process.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/process-creation-denied/Source.cs",
+      "expected": "policy_denied",
+      "notes": "System.Diagnostics is banned at compile time and the image has no shell tooling."
+    },
+    {
+      "id": "reflection-denied",
+      "category": "reflection",
+      "description": "Attempt to reflect over the loaded assembly.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/reflection-denied/Source.cs",
+      "expected": "policy_denied",
+      "notes": "System.Reflection is a banned namespace."
+    },
+    {
+      "id": "pinvoke-denied",
+      "category": "native",
+      "description": "Attempt to declare a native import.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/pinvoke-denied/Source.cs",
+      "expected": "policy_denied",
+      "notes": "System.Runtime.InteropServices is banned; unsafe code is also disabled."
+    },
+    {
+      "id": "infinite-loop",
+      "category": "exhaustion",
+      "description": "Run a non-cooperative loop until the wall-clock deadline.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/infinite-loop/Source.cs",
+      "expected": "timed_out",
+      "wall_clock_seconds": 2,
+      "notes": "The runner must kill the container at the hard deadline."
+    },
+    {
+      "id": "memory-bomb",
+      "category": "exhaustion",
+      "description": "Allocate beyond the container memory limit.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/memory-bomb/Source.cs",
+      "expected": "resource_exceeded",
+      "notes": "Either the managed heap limit trips or the kernel kills the container."
+    },
+    {
+      "id": "output-bomb",
+      "category": "exhaustion",
+      "description": "Log more than the output quota allows.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/output-bomb/Source.cs",
+      "expected": "resource_exceeded",
+      "notes": "The worker stops at its output quota with the stable output-quota error."
+    },
+    {
+      "id": "process-exit",
+      "category": "host-contract",
+      "description": "Exit the worker process instead of returning a result.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/process-exit/Source.cs",
+      "expected": "runtime_error",
+      "notes": "No result file is written, so a success cannot be forged."
+    },
+    {
+      "id": "contract-abuse",
+      "category": "host-contract",
+      "description": "Submit a class that does not implement the analysis contract.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/contract-abuse/Source.cs",
+      "expected": "compile_error",
+      "notes": "The compiler rejects the script before any container starts."
+    },
+    {
+      "id": "environment-not-inherited",
+      "category": "environment",
+      "description": "Read an environment variable and the working directory.",
+      "tier": "linux-container-hardened",
+      "policy": "default",
+      "source": "cases/environment-not-inherited/Source.cs",
+      "expected": "ok",
+      "expected_summary": "0|/app",
+      "notes": "The host environment is not inherited and the worker starts in /app."
+    }
+  ]
+}

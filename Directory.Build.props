@@ -17,6 +17,7 @@
     <Company>karlmoriaty</Company>
     <Copyright>Copyright (c) 2026 karlmoriaty</Copyright>
     <Description>A governed runtime for agent workflows and safe C# code execution.</Description>
+    <Version>0.1.0-preview.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -37,6 +38,70 @@ public sealed class ScriptCompiler
     {
         ArgumentNullException.ThrowIfNull(source);
 
+        using var activity = SandboxDiagnostics.ActivitySource.StartActivity(
+            SandboxDiagnostics.CompileSpanName,
+            ActivityKind.Internal);
+        var watch = Stopwatch.StartNew();
+        var result = CompileCore(source, cancellationToken);
+        watch.Stop();
+
+        var outcome = OutcomeOf(result);
+        var denied = outcome is "policy_denied" or "source_too_large";
+        activity?.SetTag(
+            SandboxDiagnostics.PolicyDecisionTag,
+            denied ? SandboxDiagnostics.DenyDecision : SandboxDiagnostics.AllowDecision);
+        if (denied)
+        {
+            activity?.SetTag(SandboxDiagnostics.PolicyReasonTag, outcome);
+        }
+
+        activity?.SetTag(SandboxDiagnostics.CompileOutcomeTag, outcome);
+        activity?.SetTag(
+            SandboxDiagnostics.CompileDiagnosticsTag,
+            result.Diagnostics.Count(diagnostic => diagnostic.Severity == ScriptDiagnosticSeverity.Error));
+        if (outcome != "ok")
+        {
+            activity?.SetStatus(ActivityStatusCode.Error);
+        }
+
+        SandboxMetrics.RecordCompile(outcome, watch.Elapsed);
+        if (denied)
+        {
+            SandboxMetrics.RecordPolicyDecision(SandboxDiagnostics.DenyDecision, outcome);
+        }
+
+        return result;
+    }
+
+    private static string OutcomeOf(ScriptCompilationResult result)
+    {
+        if (result.Success)
+        {
+            return "ok";
+        }
+
+        var ids = result.Diagnostics
+            .Where(diagnostic => diagnostic.Severity == ScriptDiagnosticSeverity.Error)
+            .Select(diagnostic => diagnostic.Id)
+            .ToHashSet(StringComparer.Ordinal);
+
+        if (ids.Contains("RGS0000"))
+        {
+            return "source_too_large";
+        }
+
+        if (ids.Contains("RGS0001"))
+        {
+            return "policy_denied";
+        }
+
+        return ids.Overlaps(["RGS0002", "RGS0003", "RGS0004"])
+            ? "contract_invalid"
+            : "compile_failed";
+    }
+
+    private ScriptCompilationResult CompileCore(string source, CancellationToken cancellationToken)
+    {
         var sourceBytes = Encoding.UTF8.GetBytes(source);
         var sourceHash = Hash(sourceBytes);
         if (sourceBytes.Length > _options.MaxSourceBytes)

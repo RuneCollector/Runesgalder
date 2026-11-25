@@ -55,6 +55,7 @@ public static class SandboxContainerRunner
         catch (OperationCanceledException)
         {
             timedOut = !cancellationToken.IsCancellationRequested;
+            SandboxMetrics.RecordKill(timedOut ? "wall" : "cancelled");
             await KillAsync(name);
             await process.WaitForExitAsync(CancellationToken.None);
         }

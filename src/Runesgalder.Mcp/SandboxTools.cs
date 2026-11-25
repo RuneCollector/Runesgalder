@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
+using Runesgalder.Sandbox;
 using Runesgalder.Sandbox.Compilation;
 
 namespace Runesgalder.Mcp;
@@ -67,6 +68,11 @@ internal sealed partial class SandboxTools(
         }
         catch (ToolInputException exception)
         {
+            if (exception.Code == ErrorCodes.SourceTooLarge)
+            {
+                SandboxMetrics.RecordPolicyDecision(SandboxDiagnostics.DenyDecision, exception.Code);
+            }
+
             response = CompileFailure(exception.Code, exception.Message, durationMs: 0);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -104,6 +110,7 @@ internal sealed partial class SandboxTools(
         }
         catch (ToolInputException exception)
         {
+            RecordAdmissionDenial(exception.Code);
             response = ErrorEnvelope(exception.Code, exception.Message);
         }
         catch (Exception exception)
@@ -281,6 +288,23 @@ internal sealed partial class SandboxTools(
                 ErrorCodes.SourceTooLarge,
                 $"The script is larger than the {McpLimits.MaxSourceBytes} byte limit.");
         }
+    }
+
+    private static void RecordAdmissionDenial(string code)
+    {
+        if (code is not (ErrorCodes.SourceTooLarge or ErrorCodes.DataTooLarge))
+        {
+            return;
+        }
+
+        using var activity = SandboxDiagnostics.ActivitySource.StartActivity(
+            SandboxDiagnostics.RunSpanName,
+            ActivityKind.Internal);
+        activity?.SetTag(SandboxDiagnostics.PolicyDecisionTag, SandboxDiagnostics.DenyDecision);
+        activity?.SetTag(SandboxDiagnostics.PolicyReasonTag, code);
+        activity?.SetTag(SandboxDiagnostics.SandboxOutcomeTag, code);
+        activity?.SetStatus(ActivityStatusCode.Error);
+        SandboxMetrics.RecordPolicyDecision(SandboxDiagnostics.DenyDecision, code);
     }
 
     private static CompileResponseDto ToCompileResponse(
