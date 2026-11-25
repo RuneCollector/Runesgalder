@@ -22,6 +22,7 @@ public static class SandboxContainerRunner
         ArgumentNullException.ThrowIfNull(request);
 
         var name = "runesgalder-" + Guid.NewGuid().ToString("N")[..12];
+        PrepareOutputDirectory(request.OutputDirectory);
         var arguments = BuildArguments(request, name);
         var startInfo = new ProcessStartInfo("docker")
         {
@@ -69,6 +70,22 @@ public static class SandboxContainerRunner
             standardError.ToString(),
             resultPath,
             File.Exists(resultPath));
+    }
+
+    internal static void PrepareOutputDirectory(string directory)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        // The worker runs as the image's non-root user, not the host user, so the
+        // mounted directory must grant write and traverse without listing.
+        File.SetUnixFileMode(
+            directory,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupWrite | UnixFileMode.GroupExecute |
+            UnixFileMode.OtherWrite | UnixFileMode.OtherExecute);
     }
 
     internal static IReadOnlyList<string> BuildArguments(ContainerRunRequest request, string name)

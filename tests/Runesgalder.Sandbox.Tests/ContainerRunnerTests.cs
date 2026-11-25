@@ -59,6 +59,30 @@ public sealed class ContainerRunnerTests
         Assert.Contains("/out/analysis.json", arguments);
     }
 
+    [Fact]
+    public void GrantsTheContainerUserWriteAccessToTheOutputDirectory()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var directory = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            SandboxContainerRunner.PrepareOutputDirectory(directory);
+
+            var mode = File.GetUnixFileMode(directory);
+            Assert.True(mode.HasFlag(UnixFileMode.OtherWrite));
+            Assert.True(mode.HasFlag(UnixFileMode.OtherExecute));
+            Assert.False(mode.HasFlag(UnixFileMode.OtherRead));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static string? ValueAfter(IReadOnlyList<string> arguments, string flag)
     {
         for (var i = 0; i < arguments.Count - 1; i++)
