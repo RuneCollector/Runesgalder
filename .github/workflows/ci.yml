@@ -44,3 +44,35 @@ jobs:
 
       - name: Check formatting
         run: dotnet format Runesgalder.sln --verify-no-changes --no-restore
+
+  linux-e2e:
+    name: Linux E2E (container)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish the worker
+        run: dotnet publish src/Runesgalder.Sandbox.Worker/Runesgalder.Sandbox.Worker.csproj -c Release -o artifacts/worker
+
+      - name: Build the worker image
+        run: docker build -f src/Runesgalder.Sandbox.Worker/Dockerfile -t runesgalder-worker:dev artifacts/worker
+
+      - name: Verify the worker image
+        run: docker image inspect runesgalder-worker:dev > /dev/null
+
+      - name: Restore
+        run: dotnet restore Runesgalder.sln
+
+      - name: Build
+        run: dotnet build Runesgalder.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Runesgalder.sln -c Release --no-build
