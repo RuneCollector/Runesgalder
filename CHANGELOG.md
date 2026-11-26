@@ -4,6 +4,10 @@ All notable changes to this project are recorded here. The format follows Keep a
 
 ## [Unreleased]
 
+### Added
+
+- Project ownership and maintainer attribution in README, AUTHORS, and MAINTAINERS.md, with a public co-maintainer recruitment and application process.
+
 ## [0.1.0-preview.0] - 2026-11-25
 
 First preview. Pre-alpha, single-tenant, Linux-container sandbox; not production ready.

@@ -18,6 +18,8 @@ Both surfaces are designed around the same primitives: `Step`, `Effect`, `Policy
 
 Project site: <https://runesgalder.github.io/>
 
+Created and maintained by [@karlmoriaty](https://github.com/karlmoriaty), with contributions from the community. See [AUTHORS](AUTHORS) for ownership and [MAINTAINERS.md](MAINTAINERS.md) for the current team and co-maintainer openings.
+
 ## Status
 
 **Pre-alpha. Not production ready. No packages have been published.**
@@ -181,6 +183,21 @@ The v0.1-preview scope is deliberately narrow:
 - NuGet and GHCR preview packages at v0.1-preview, after explicit approval.
 
 No release date is promised. Progress is tracked through daily demos and weekly gates.
+
+## Maintainers
+
+Runesgalder is created and led by [@karlmoriaty](https://github.com/karlmoriaty), who owns the project and is the counterparty to the CLA. Contributors are credited in the repository history and in [AUTHORS](AUTHORS).
+
+**The project is recruiting co-maintainers.** The goal is two to three active maintainers, so no single person is a bus factor. We are looking for people who can own at least one area for a few hours a week:
+
+- Flow combinators, budgets, approvals, and journal semantics.
+- Sandbox isolation, container hardening, and the escape corpus.
+- MCP clients, integrations, and developer tooling.
+- Documentation, quickstarts, and translations.
+- CI, release engineering, and dependency hygiene.
+- Security review of policy, generated code, and the execution boundary.
+
+Maintenance is unpaid, and the [CLA](CLA.md) applies. If you are interested, open a [co-maintainer application](https://github.com/Runesgalder/Runesgalder/issues/new?template=maintainer_application.yml) and read [MAINTAINERS.md](MAINTAINERS.md) for the role, the path from contributor to maintainer, and what we ask for.
 
 ## Contributing
 

@@ -1,0 +1,73 @@
+name: Co-maintainer application
+description: Volunteer to review and maintain one area of Runesgalder.
+title: "[Maintainer]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read [MAINTAINERS.md](https://github.com/Runesgalder/Runesgalder/blob/main/MAINTAINERS.md) before applying. This issue is public: share only a GitHub handle, the area you want to own, and a general availability range. Do not post private contact details, employer information, or identity documents.
+
+        Do not report security vulnerabilities here. Follow [SECURITY.md](https://github.com/Runesgalder/Runesgalder/blob/main/SECURITY.md).
+
+  - type: input
+    id: github
+    attributes:
+      label: GitHub handle
+      description: The account you would use for reviews and commits.
+      placeholder: "@your-handle"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area you want to own
+      description: See MAINTAINERS.md for what each area covers.
+      options:
+        - Flow (combinators, budgets, approvals, journal and recovery)
+        - Sandbox (isolation, hardening, policy, escape corpus)
+        - MCP and tooling (stdio surface, clients, CLI)
+        - Documentation (quickstarts, translations, ADRs, site)
+        - Release and CI (packaging, attestations, dependency hygiene)
+        - Security review (threat model, policy, generated-code boundaries)
+    validations:
+      required: true
+
+  - type: textarea
+    id: contributions
+    attributes:
+      label: Relevant contributions
+      description: Link two or three pull requests, issues, reviews, or external projects that show how you work.
+      placeholder: "https://github.com/Runesgalder/Runesgalder/pull/..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: availability
+    attributes:
+      label: Typical availability
+      options:
+        - 1-2 hours a week
+        - 3-5 hours a week
+        - 5 or more hours a week
+        - Irregular, but available for reviews
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why this area
+      description: What you want to maintain, and what you would improve first.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: I have read MAINTAINERS.md, CONTRIBUTING.md, the CLA, and the Code of Conduct.
+          required: true
+        - label: I understand that maintenance is unpaid and that applications are public.
+          required: true

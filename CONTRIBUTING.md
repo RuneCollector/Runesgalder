@@ -71,6 +71,10 @@ Large changes that affect public APIs, security boundaries, release packaging, g
 
 The project records acceptance decisions in [docs/acceptance/](docs/acceptance/). Small updates are accepted by the maintainer after tests and evidence. Large updates require the project owner's explicit acceptance.
 
+## Becoming a maintainer
+
+The project is recruiting one or two co-maintainers, with a goal of two to three active maintainers in total. Start with two or three focused contributions so we can see how you work, then open a [co-maintainer application](https://github.com/Runesgalder/Runesgalder/issues/new?template=maintainer_application.yml). [MAINTAINERS.md](MAINTAINERS.md) describes the areas, the four to six week trial, and what the role involves. Maintenance is unpaid and the CLA applies.
+
 ## Licence
 
 By contributing, you agree that your contributions are licensed under the MIT Licence and the [CLA](CLA.md), version 1.0, effective 2026-11-23. You retain copyright ownership of your contributions. All pull requests require acceptance of the CLA; corporate contributors must provide a signed [Corporate CLA](CORPORATE_CLA.md) by email before entity-owned contributions are merged.

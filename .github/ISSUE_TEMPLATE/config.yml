@@ -6,3 +6,6 @@ contact_links:
   - name: Contributing guide
     url: https://github.com/Runesgalder/Runesgalder/blob/main/CONTRIBUTING.md
     about: Read the contribution and CLA guidance before opening a code pull request.
+  - name: Co-maintainer application
+    url: https://github.com/Runesgalder/Runesgalder/issues/new?template=maintainer_application.yml
+    about: Volunteer to review and maintain one area of Runesgalder.
